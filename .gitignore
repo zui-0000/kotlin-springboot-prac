@@ -1,0 +1,19 @@
+# Gradle
+.gradle/
+build/
+
+# mise が DL したツール類は含めない（mise.toml で再現できる）
+
+# 環境変数（認証情報を含むためコミットしない。.env.example を使う）
+.env
+
+# IDE
+.idea/
+*.iml
+.kotlin/
+
+# OS
+.DS_Store
+
+# ログ
+*.log

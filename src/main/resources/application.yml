@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: kotlin-springboot-prac
+
+  # DB 接続設定（環境変数を優先し、無ければローカルのデフォルト値を使う）
+  datasource:
+    url: jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:prac}
+    username: ${POSTGRES_USER:prac}
+    password: ${POSTGRES_PASSWORD:pracpass}
+
+  jpa:
+    hibernate:
+      # スキーマは Flyway が管理するため、JPA は検証のみ（自動生成させない）
+      ddl-auto: validate
+    # 開発中は実行される SQL をログに出す
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    # マイグレーションファイルの置き場所（デフォルト）
+    locations: classpath:db/migration
