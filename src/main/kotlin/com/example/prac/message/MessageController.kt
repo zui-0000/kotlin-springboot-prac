@@ -14,15 +14,15 @@ data class CreateMessageRequest(
 @RestController
 @RequestMapping("/messages")
 class MessageController(
-    private val repository: MessageRepository,
+    private val service: MessageService,
 ) {
     // 一覧取得
     @GetMapping
-    fun list(): List<Message> = repository.findAll()
+    fun list(): List<Message> = service.list()
 
     // 登録
     @PostMapping
     fun create(
         @RequestBody request: CreateMessageRequest,
-    ): Message = repository.save(Message(content = request.content))
+    ): Message = service.create(request.content)
 }

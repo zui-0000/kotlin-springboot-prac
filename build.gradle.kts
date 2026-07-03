@@ -3,8 +3,6 @@ plugins {
     kotlin("jvm") version "2.4.0"
     // Spring 用に all-open を適用（@Component などのクラスを自動で open に）
     kotlin("plugin.spring") version "2.4.0"
-    // JPA エンティティ用に no-arg コンストラクタを自動生成
-    kotlin("plugin.jpa") version "2.4.0"
     // Spring Boot 本体
     id("org.springframework.boot") version "4.1.0"
     // Spring Boot の BOM でライブラリのバージョンを一元管理
@@ -30,14 +28,23 @@ repositories {
 }
 
 val kotestVersion = "5.9.1"
+val exposedVersion = "1.3.1"
 
 dependencies {
     // --- Spring Boot ---
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    // Exposed が使う DataSource（HikariCP）の自動設定を提供
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
     // Kotlin を JSON 変換・リフレクションで扱うために必要
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+    // --- ORM (Exposed) ---
+    // JetBrains 製の Kotlin ネイティブ ORM。Boot4 用スターター。
+    // core / jdbc / dao / spring-transaction を推移的に取り込む。
+    implementation("org.jetbrains.exposed:exposed-spring-boot4-starter:$exposedVersion")
+    // java.time 型（timestampWithTimeZone → OffsetDateTime）のサポート
+    implementation("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
 
     // --- DB / マイグレーション ---
     // Spring Boot 4 はオートコンフィグがモジュール分割された。

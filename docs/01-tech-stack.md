@@ -1,6 +1,6 @@
 # 技術選定と方針
 
-> 最終更新: 2026-07-03
+> 最終更新: 2026-07-04
 > 目的: Kotlin / Spring Boot によるサーバサイド開発の学習
 
 ## この文書について
@@ -17,7 +17,7 @@
 | フレームワーク | Spring Boot | 4.1.0 | 2026/6/10 リリース。Spring Framework 7 ベース |
 | ビルドツール | Gradle (Kotlin DSL) | 9.6.1 | ビルドスクリプトも Kotlin で書ける |
 | DB | PostgreSQL | (Docker で最新安定版) | ローカルはコンテナで起動 |
-| データアクセス | Spring Data JPA | (Spring Boot 管理) | Entity / Repository で DB を読み書き |
+| データアクセス (ORM) | Exposed | 1.3.1 | JetBrains 製・Kotlin ネイティブ。Boot4 用スターター使用 |
 | マイグレーション | Flyway | (Spring Boot 管理) | DB スキーマのバージョン管理 |
 | Linter/Formatter | ktlint-gradle | 14.2.0 | `ktlintCheck` / `ktlintFormat` タスク |
 | テスト | Kotest | 5.9.1 | 安定版。6.0 はまだ Milestone のため見送り |
@@ -37,6 +37,14 @@
 ### テストは Kotest 5.9.1（安定版を優先）
 - Kotest 6.0 は 2026/7 時点でまだ Milestone（正式版ではない）。
 - 学習中に「フレームワークのバグか自分のミスか」で消耗しないよう、安定版の 5.9.1 を採用。
+
+### ORM は Exposed（Spring Data JPA から移行）
+- 当初 JPA/Hibernate で構築したが、**Kotlin ネイティブに書ける Exposed へ移行**した。
+- 理由: JPA は Kotlin だと `open` 必須・data class 不可などの制約があるが、
+  Exposed は普通の `class` / `data class` で書け、型安全な SQL DSL で発行 SQL が透明。
+- Flyway との関係は JPA 時代と同じ:「スキーマの正は Flyway、Exposed は合わせる側」。
+  Exposed の自動テーブル生成は `spring.exposed.generate-ddl=false` で無効化。
+- 詳細と書き方は [09-exposed.md](./09-exposed.md) を参照。
 
 ### マイグレーションは Flyway（Liquibase ではなく）
 - PostgreSQL 単体構成なら Flyway で十分。SQL をそのまま書けるので直感的で学習向き。
@@ -59,7 +67,7 @@ kotlin-springboot-prac/
 ├── docs/                    # ← このドキュメント群
 ├── src/
 │   ├── main/
-│   │   ├── kotlin/          # Application / Controller / Entity / Repository
+│   │   ├── kotlin/          # Application / Controller / Service / Table(Exposed)
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       └── db/migration/    # Flyway の V1__init.sql など
@@ -75,13 +83,13 @@ kotlin-springboot-prac/
         ↓
 [アプリ起動 (bootRun)] → Flyway が未適用の SQL を PostgreSQL に流す
         ↓
-[Spring Data JPA] が出来上がったテーブルを Kotlin から読み書き
+[Exposed] が出来上がったテーブルを Kotlin から読み書き
 ```
 
 各レイヤーの役割:
 - PostgreSQL … データを保存する「箱」
 - Flyway ……… 箱の「形（スキーマ）」を管理（マイグレーション、**実行時**に動く）
-- Spring Data JPA … 箱の「中身」を読み書き（データ操作）
+- Exposed …… 箱の「中身」を読み書き（データ操作）
 - ktlint ……… Kotlin コードの見た目を整える（開発ツール、**ビルド時/手動**）
 
 ## 参考リンク
@@ -92,3 +100,4 @@ kotlin-springboot-prac/
 - [Kotest 公式](https://kotest.io/)
 - [Flyway 公式](https://documentation.red-gate.com/flyway)
 - [mise 公式](https://mise.jdx.dev/)
+- [Exposed 公式](https://www.jetbrains.com/help/exposed/home.html)
