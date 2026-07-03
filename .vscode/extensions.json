@@ -1,0 +1,26 @@
+{
+  // このプロジェクトを Cursor / VS Code で開いたときに推薦される拡張機能。
+  // 推薦: コマンドパレット → "Extensions: Show Recommended Extensions" で確認できる。
+  "recommendations": [
+    // Kotlin 言語サポート（補完・定義ジャンプ・診断）。community 製 (fwcd)。
+    // ※ JetBrains 公式版は Open VSX 未掲載のため、Cursor では fwcd 版を使用。
+    "fwcd.kotlin",
+    "streetsidesoftware.code-spell-checker",
+    "mikestead.dotenv",
+    "editorconfig.editorconfig",
+    "usernamehw.errorlens",
+    "dsznajder.es7-react-js-snippets",
+    "mhutchie.git-graph",
+    "hashicorp.terraform",
+    "oderwat.indent-rainbow",
+    "ms-ceintl.vscode-language-pack-ja",
+    "shd101wyy.markdown-preview-enhanced",
+    "gruntfuggly.todo-tree",
+    "mosapride.zenkaku",
+    "hediet.vscode-drawio",
+    "hverlin.mise-vscode",
+    "tombi-org.tombi-vscode",
+  ],
+  // 誤って推薦したくない拡張があればここに列挙（現状なし）。
+  "unwantedRecommendations": []
+}
