@@ -118,7 +118,7 @@ tasks.processResources {
 // interfaceOnly: Controller は自前実装（Spring Boot 版への依存を減らし堅牢化）。
 openApiGenerate {
     generatorName.set("kotlin-spring")
-    inputSpec.set("$rootDir/../schema/openapi.yaml")
+    inputSpec.set("$rootDir/schema/openapi.yaml")
     outputDir.set(
         layout.buildDirectory
             .dir("generated/openapi")
@@ -140,7 +140,7 @@ openApiGenerate {
 
 // OpenAPI 仕様の妥当性を検証する（./gradlew openApiValidate / mise run schema-validate）
 openApiValidate {
-    inputSpec.set("$rootDir/../schema/openapi.yaml")
+    inputSpec.set("$rootDir/schema/openapi.yaml")
     recommend.set(true) // 構文チェックに加えてベストプラクティスの推奨も出す
 }
 
@@ -159,4 +159,10 @@ ktlint {
     filter {
         exclude { it.file.path.contains("generated/openapi") }
     }
+}
+
+// ktlint は main ソースセット（生成コードのディレクトリを含む）を走査するため、
+// 生成タスクへの依存を明示する（未宣言だと Gradle がタスク順序の問題として検出する）。
+tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask>().configureEach {
+    dependsOn("openApiGenerate")
 }

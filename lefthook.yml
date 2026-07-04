@@ -11,7 +11,7 @@ pre-commit:
       run: mise run lint
     # OpenAPI 定義に変更があれば妥当性を検証
     openapi-validate:
-      glob: "schema/*.{yaml,yml}"
+      glob: "backend/schema/*.{yaml,yml}"
       run: mise run schema-validate
 
 # コミットメッセージ: Conventional Commits 規約に沿っているか committed で検証

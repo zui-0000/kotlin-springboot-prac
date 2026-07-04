@@ -1,11 +1,11 @@
 # OpenAPI コード生成（スキーマ駆動）
 
-> `schema/openapi.yaml`（API 契約）から Kotlin の API interface / DTO を生成する仕組み。
+> `backend/schema/openapi.yaml`（API 契約）から Kotlin の API interface / DTO を生成する仕組み。
 
 ## 全体像
 
 ```
-schema/openapi.yaml          … API の契約（唯一の正・手書き）
+backend/schema/openapi.yaml  … API の契約（唯一の正・手書き）
       │ openapi-generator（kotlin-spring）
       ▼
 backend/build/generated/openapi/  … MessagesApi(interface) + DTO（自動生成）
@@ -33,7 +33,7 @@ plugins {
 
 openApiGenerate {
     generatorName.set("kotlin-spring")
-    inputSpec.set("$rootDir/../schema/openapi.yaml")   // schema/ を参照
+    inputSpec.set("$rootDir/schema/openapi.yaml")   // backend/schema/ を参照
     outputDir.set(layout.buildDirectory.dir("generated/openapi")...)
     apiPackage.set("com.example.prac.generated.api")
     modelPackage.set("com.example.prac.generated.model")

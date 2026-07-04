@@ -10,26 +10,29 @@ kotlin-springboot-prac/
 ├── README.md / CLAUDE.md / mise.toml   # リポジトリ全体の設定・方針
 ├── lefthook.yml / committed.toml       # Git フック・コミット規約（リポジトリ全体）
 ├── docs/                               # 学習ノート（全体）
-├── backend/                            # Kotlin / Spring Boot アプリ
-├── schema/                             # OpenAPI 定義（API 契約・コード生成の起点）
+├── backend/                            # Kotlin / Spring Boot アプリ（API 契約 schema/ も配下）
 └── infrastructures/                    # Terraform（クラウドインフラ）
 ```
 
-## 3本柱の役割
+## 役割
 
 | ディレクトリ | 中身 | 補足 |
 |--------------|------|------|
-| `backend/` | Kotlin/Spring アプリ | `build.gradle.kts` や `src/` など、アプリ一式がここ |
-| `schema/` | OpenAPI 仕様 | API の契約（唯一の正）。ここから backend/frontend のコードを生成 |
+| `backend/` | Kotlin/Spring アプリ | `build.gradle.kts` / `src/`、API 契約 `schema/openapi.yaml` を含む |
 | `infrastructures/` | Terraform | クラウドインフラを IaC で管理。アプリとは独立 |
 
 - リポジトリ全体に関わる設定（`mise.toml` / `lefthook.yml` / `committed.toml` / `docs/`）は
   ルートに置く。
-- スキーマ駆動開発（contract-first）: `schema/openapi.yaml` を起点に、
-  backend の API interface / DTO を生成する（将来はフロントの TS クライアントも）。
+- スキーマ駆動開発（contract-first）: `backend/schema/openapi.yaml` を起点に、
+  backend の API interface / DTO を生成する（[19-openapi-codegen.md](./19-openapi-codegen.md)）。
+
+## なぜ schema を backend 配下に置くか
+- **API 契約の消費者が backend だけ**（フロントを持たない）ため、契約は backend の持ち物。
+- 契約を複数コンポーネントで共有する場合はルート直下に独立させる意味があるが、
+  単一消費者ではその必要がなく、`backend/schema/` に置く方が所有関係が明確でパスも単純。
 
 ## なぜアプリを backend/ に移したか
-- Terraform（`infrastructures/`）や OpenAPI（`schema/`）と**同じリポジトリで並べて管理**するため。
+- Terraform（`infrastructures/`）と**同じリポジトリで並べて管理**するため。
 - アプリをルート直下に置いたままだと、リポジトリ全体のファイルと混在して見通しが悪い。
 - `backend/` に隔離することで、各コンポーネントの責務が明確になる。
 

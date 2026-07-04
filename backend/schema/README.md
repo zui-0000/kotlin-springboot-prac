@@ -28,4 +28,4 @@ backend の MessageController が MessagesApi を実装
 2. `mise run generate` で再生成、または `mise run build` / `dev`。
 3. 生成された interface の変更に合わせて Controller の実装を直す。
 
-詳細は [../docs/19-openapi-codegen.md](../docs/19-openapi-codegen.md)。
+詳細は [../../docs/19-openapi-codegen.md](../../docs/19-openapi-codegen.md)。

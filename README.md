@@ -98,15 +98,14 @@ curl localhost:8080/messages
 
 ## プロジェクト構成（モノレポ）
 
-リポジトリ全体は「バックエンド + インフラ + スキーマ」の3本柱で構成する。
+リポジトリは「バックエンド + インフラ」で構成する（API 契約は backend が単独で使うため backend 配下）。
 
 ```
 kotlin-springboot-prac/
 ├── README.md / CLAUDE.md / mise.toml   # リポジトリ全体の設定・方針
 ├── lefthook.yml / committed.toml       # Git フック・コミット規約（全体）
 ├── docs/                               # 学習ノート（全体）
-├── backend/                            # Kotlin / Spring Boot アプリ
-├── schema/                             # OpenAPI 定義（API 契約・コード生成の起点）
+├── backend/                            # Kotlin / Spring Boot アプリ（API 契約も配下）
 └── infrastructures/                    # Terraform（クラウドインフラ）
 ```
 
@@ -116,6 +115,7 @@ kotlin-springboot-prac/
 backend/
 ├── build.gradle.kts / settings.gradle.kts / gradlew
 ├── docker-compose.yml        # ローカル PostgreSQL（接続情報を直書き）
+├── schema/openapi.yaml       # OpenAPI 定義（API 契約・コード生成の起点）
 └── src/
     ├── main/
     │   ├── kotlin/com/example/prac/
