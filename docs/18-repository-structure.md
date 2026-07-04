@@ -52,6 +52,16 @@ mise 設定は2階層に分割している。
 - Git フック（lefthook）はリポジトリのルートで動くため、backend タスクを呼ぶ箇所は
   `cd backend && mise run ...` としている。
 
+## エディタ連携（マルチルートワークスペース）
+
+mise 拡張はワークスペースのルートを基準に mise を解決するため、単一ルート（リポジトリ直下）
+で開くと `backend/mise.toml` のタスクが UI に出ない（ルートからは backend タスクが見えないため）。
+
+対策として **`kotlin-springboot-prac.code-workspace`（マルチルート）** を用意している。
+Cursor で「File > Open Workspace from File...」からこれを開くと、root / backend /
+infrastructures がそれぞれ独立した根として扱われ、backend タスクの run ボタンも使える。
+（もちろんターミナルから `cd backend && mise run <task>` でも実行できる）
+
 ## 注意
 - `backend/` へ移動する前に書かれた一部の docs では、パスを `src/...` のように
   `backend/` を省略して記載している場合がある。実際の場所は `backend/src/...`。
