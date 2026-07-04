@@ -1,0 +1,10 @@
+# local プロファイル用の設定（差分だけを書く）。
+# 起動: SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
+#
+# application.yml（共通）に「重ね合わせ」で適用される。
+# ここに書いていない設定は共通のものがそのまま使われる。
+spring:
+  exposed:
+    # ローカル開発では実行された SQL をログに出して、挙動を確認しやすくする
+    # （共通側は未指定 = デフォルト false。ここで true に上書き）
+    show-sql: true
