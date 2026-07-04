@@ -43,13 +43,29 @@ Rails の `schema.rb`、Prisma の `schema.prisma` と同じ発想。
 ## schema.sql スナップショットの運用
 
 ### 生成方法
+`schema.sql` は **マイグレーション実行時に自動更新**される。単独の生成コマンドは用意しない。
+
 ```bash
-docker compose up -d          # DB 起動
-./src/main/resources/db/dump-schema.sh      # db/schema.sql を生成
+mise run db-migrate   # flywayMigrate → dump-schema.sh（schema.sql も更新）
+mise run dev          # 上記 db-migrate を実行してからアプリ起動（schema.sql も更新される）
 ```
 
-`scripts/dump-schema.sh` は `pg_dump --schema-only` で現在のスキーマを吐き出す。
-`flyway_schema_history`（Flyway の管理テーブル）は除外し、自前のスキーマだけを出力。
+- **手で編集しないこと**。自動生成ファイルのため、先頭に警告ヘッダを付けている
+  （Rails の `schema.rb` / Prisma の `schema.prisma` と同じ運用）。
+- Git では追跡する（PR でスキーマ差分をレビューできるようにするため）。
+
+`dump-schema.sh` は **システムカタログから「1テーブル＝1つの CREATE TABLE 文」を組み立てる**。
+`flyway_schema_history`（Flyway の管理テーブル）は除外し、自前のスキーマだけを出力する。
+
+### なぜ pg_dump をそのまま使わないか（MySQL 経験者向け）
+- `pg_dump` はテーブル定義を**複数の文に分割**する（`CREATE TABLE` + `CREATE SEQUENCE` +
+  `ALTER TABLE ... PRIMARY KEY` 等）。これは PostgreSQL の制限ではなく **pg_dump の出力スタイル**。
+- MySQL の `mysqldump` / `SHOW CREATE TABLE` は**1文に集約**するので、その感覚に合わせたい場合は
+  pg_dump の出力ではなく、カタログから自前で組み立てる（本スクリプトの方式）。
+- 自動採番列（`default` が `nextval(...)`）は `bigserial` 等の表記に戻し、`PRIMARY KEY` は
+  インラインで出力するため、MySQL 風の読みやすい1文になる。
+- 対応範囲は「列・型・NOT NULL・DEFAULT・主キー」。外部キーや索引など複雑な要素が必要になったら
+  スクリプトのクエリを拡張する（それでも足りなければ `pg_dump` で確認する）。
 
 ### 位置づけ（重要）
 - **`src/main/resources/db/schema.sql` は参照専用**。適用はしない。スキーマの「正」はあくまで Flyway。

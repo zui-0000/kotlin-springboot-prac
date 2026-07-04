@@ -15,7 +15,9 @@ gradle = "9.6.1"
 # ---------------------------------------------------------------------------
 
 [tasks.dev]
-description = "アプリを起動する（local プロファイル固定・SQL ログ有り）"
+description = "マイグレーション+schema.sql更新の後にアプリを起動する（local固定・SQLログ有り）"
+# 起動前に db-migrate（flywayMigrate → schema.sql 更新）を先に走らせる
+depends = ["db-migrate"]
 env = { SPRING_PROFILES_ACTIVE = "local" }
 run = "./gradlew bootRun"
 
@@ -55,9 +57,8 @@ description = "PostgreSQL をデータごと作り直す"
 run = "docker compose down -v && docker compose up -d"
 
 [tasks.db-migrate]
-description = "マイグレーションを単独で実行する（アプリ起動なし・本番寄り）"
-run = "./gradlew flywayMigrate"
-
-[tasks.schema-dump]
-description = "現在の DB スキーマを schema.sql に出力する"
-run = "./src/main/resources/db/dump-schema.sh"
+description = "マイグレーションを実行し、schema.sql も更新する（アプリ起動なし）"
+run = [
+  "./gradlew flywayMigrate",
+  "./src/main/resources/db/dump-schema.sh",
+]

@@ -60,7 +60,7 @@ curl localhost:8080/messages
 
 | コマンド | 内容 | 実体 |
 |----------|------|------|
-| `mise run dev` | アプリ起動（local プロファイル固定・SQL ログ有り） | `SPRING_PROFILES_ACTIVE=local ./gradlew bootRun` |
+| `mise run dev` | マイグレーション+`schema.sql`更新の後にアプリ起動（local固定・SQL ログ有り） | `db-migrate` → `bootRun` |
 | `mise run test` | テスト実行（Kotest） | `./gradlew test` |
 | `mise run format` | Kotlin コードを自動整形 | `./gradlew ktlintFormat` |
 | `mise run lint` | Lint チェック | `./gradlew ktlintCheck` |
@@ -69,8 +69,7 @@ curl localhost:8080/messages
 | `mise run db-up` | PostgreSQL 起動 | `docker compose up -d` |
 | `mise run db-stop` | PostgreSQL を止める（コンテナは残す） | `docker compose stop` |
 | `mise run db-reset` | PostgreSQL をデータごと作り直す | `docker compose down -v && up -d` |
-| `mise run db-migrate` | マイグレーションを単独で実行（アプリ起動なし） | `./gradlew flywayMigrate` |
-| `mise run schema-dump` | 現在の DB スキーマを `schema.sql` に出力 | `dump-schema.sh` |
+| `mise run db-migrate` | マイグレーション実行 + `schema.sql` 更新（アプリ起動なし） | `flywayMigrate` → `dump-schema.sh` |
 
 ## DB マイグレーションのやり方
 
@@ -85,13 +84,9 @@ curl localhost:8080/messages
    ALTER TABLE messages ADD COLUMN title VARCHAR(100);
    ```
 2. 必要なら Exposed の `Table` 定義（`Messages.kt`）も合わせて更新。
-3. マイグレーションを適用する。**2つの方法があり、どちらも同じ履歴を見るので共存できる**:
-   - **アプリ起動時に自動**: `mise run dev`（`spring-boot-flyway` が起動時に流す。ローカル向け）
-   - **単独コマンドで手動**: `mise run db-migrate`（アプリ起動なしで流す。本番デプロイ前などに）
-4. スキーマの参照用スナップショットを更新:
-   ```bash
-   mise run schema-dump   # schema.sql を再生成
-   ```
+3. `mise run dev` または `mise run db-migrate` を実行する。
+   どちらも「**マイグレーション適用 → `schema.sql` 更新**」を行う（`dev` はその後アプリを起動する）。
+   → `schema.sql` は自動生成されるので、手で編集しないこと（先頭に警告ヘッダあり）。
 
 > 詳細は [docs/11-flyway-migrations.md](./docs/11-flyway-migrations.md) /
 > [docs/12-current-schema-visibility.md](./docs/12-current-schema-visibility.md)。
