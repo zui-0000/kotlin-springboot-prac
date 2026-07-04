@@ -52,15 +52,18 @@ mise 設定は2階層に分割している。
 - Git フック（lefthook）はリポジトリのルートで動くため、backend タスクを呼ぶ箇所は
   `cd backend && mise run ...` としている。
 
-## エディタ連携（マルチルートワークスペース）
+## エディタからタスクを実行する（.vscode/tasks.json）
 
-mise 拡張はワークスペースのルートを基準に mise を解決するため、単一ルート（リポジトリ直下）
-で開くと `backend/mise.toml` のタスクが UI に出ない（ルートからは backend タスクが見えないため）。
+mise 拡張はワークスペースのルートを基準に mise を解決するため、backend/mise.toml の
+タスクを UI（run ボタン / タスクツリー）に出せない（ルートからは backend タスクが見えないため）。
+マルチルートワークスペースも試したが、拡張が子フォルダの config を拾わなかった。
 
-対策として **`kotlin-springboot-prac.code-workspace`（マルチルート）** を用意している。
-Cursor で「File > Open Workspace from File...」からこれを開くと、root / backend /
-infrastructures がそれぞれ独立した根として扱われ、backend タスクの run ボタンも使える。
-（もちろんターミナルから `cd backend && mise run <task>` でも実行できる）
+代替として **`.vscode/tasks.json`（ルート）** に backend タスクを定義している。
+- コマンドパレット（`Cmd+Shift+P`）→ **「Tasks: Run Task」** で一覧・実行できる。
+- 直前のタスク再実行は「Tasks: Rerun Last Task」。
+- 各タスクは `cwd = ${workspaceFolder}/backend` で実行されるため、リポジトリのルートを
+  普通に開くだけでよい（マルチルート不要）。
+- もちろんターミナルから `cd backend && mise run <task>` でも実行できる。
 
 ## 注意
 - `backend/` へ移動する前に書かれた一部の docs では、パスを `src/...` のように

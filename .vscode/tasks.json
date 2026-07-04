@@ -1,0 +1,84 @@
+{
+  // VS Code / Cursor 純正のタスク定義（リポジトリのルートを開いた状態で使う）。
+  // backend のタスクを cwd=backend で実行する。
+  // 実行方法: コマンドパレット(Cmd+Shift+P) → "Tasks: Run Task" → 選ぶ。
+  //          直前のタスク再実行は "Tasks: Rerun Last Task"。
+  "version": "2.0.0",
+  "options": {
+    // すべてのタスクを backend/ で実行する
+    "cwd": "${workspaceFolder}/backend"
+  },
+  "tasks": [
+    {
+      "label": "dev（起動）",
+      "type": "shell",
+      "command": "mise run dev",
+      "detail": "マイグレーション+schema.sql更新の後にアプリ起動（local固定）",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "test",
+      "type": "shell",
+      "command": "mise run test",
+      "detail": "テストを実行する（Kotest）",
+      "problemMatcher": []
+    },
+    {
+      "label": "fix（整形+lint）",
+      "type": "shell",
+      "command": "mise run fix",
+      "detail": "自動整形してから残りの違反をチェック",
+      "problemMatcher": []
+    },
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "mise run build",
+      "detail": "ビルド（テスト・Lint 含む）",
+      "problemMatcher": []
+    },
+    {
+      "label": "generate（OpenAPI生成）",
+      "type": "shell",
+      "command": "mise run generate",
+      "detail": "OpenAPI から API interface / DTO を生成",
+      "problemMatcher": []
+    },
+    {
+      "label": "schema-validate",
+      "type": "shell",
+      "command": "mise run schema-validate",
+      "detail": "OpenAPI 仕様の妥当性を検証",
+      "problemMatcher": []
+    },
+    {
+      "label": "db-up（DB起動）",
+      "type": "shell",
+      "command": "mise run db-up",
+      "detail": "PostgreSQL を起動",
+      "problemMatcher": []
+    },
+    {
+      "label": "db-stop（DB停止）",
+      "type": "shell",
+      "command": "mise run db-stop",
+      "detail": "PostgreSQL を止める（コンテナは残す）",
+      "problemMatcher": []
+    },
+    {
+      "label": "db-reset（DB作り直し）",
+      "type": "shell",
+      "command": "mise run db-reset",
+      "detail": "PostgreSQL をデータごと作り直す",
+      "problemMatcher": []
+    },
+    {
+      "label": "db-migrate",
+      "type": "shell",
+      "command": "mise run db-migrate",
+      "detail": "マイグレーション実行 + schema.sql 更新",
+      "problemMatcher": []
+    }
+  ]
+}
