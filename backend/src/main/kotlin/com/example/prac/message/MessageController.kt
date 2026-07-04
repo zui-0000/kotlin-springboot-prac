@@ -1,28 +1,23 @@
 package com.example.prac.message
 
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
+import com.example.prac.generated.api.MessagesApi
+import com.example.prac.generated.model.CreateMessageRequest
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
+import com.example.prac.generated.model.Message as MessageDto
 
-// リクエストボディ用（登録時に content だけ受け取る）
-data class CreateMessageRequest(
-    val content: String,
-)
-
+// OpenAPI(schema/openapi.yaml)から生成された MessagesApi を実装する（契約優先）。
+// ルーティングや入出力の型は生成された interface が持つ。
+// Controller はサービス呼び出しと、ドメイン ⇔ 生成 DTO の変換だけを担う。
 @RestController
-@RequestMapping("/messages")
 class MessageController(
     private val service: MessageService,
-) {
-    // 一覧取得
-    @GetMapping
-    fun list(): List<Message> = service.list()
+) : MessagesApi {
+    override fun listMessages(): ResponseEntity<List<MessageDto>> = ResponseEntity.ok(service.list().map { it.toDto() })
 
-    // 登録
-    @PostMapping
-    fun create(
-        @RequestBody request: CreateMessageRequest,
-    ): Message = service.create(request.content)
+    override fun createMessage(createMessageRequest: CreateMessageRequest): ResponseEntity<MessageDto> =
+        ResponseEntity.ok(service.create(createMessageRequest.content).toDto())
+
+    // ドメインの Message → 生成された DTO
+    private fun Message.toDto() = MessageDto(id = id, content = content, createdAt = createdAt)
 }

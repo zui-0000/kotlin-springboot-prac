@@ -69,6 +69,7 @@ curl localhost:8080/messages
 | `mise run lint` | Lint チェック | `./gradlew ktlintCheck` |
 | `mise run fix` | 整形してから残りをチェック（一発） | `ktlintFormat` → `ktlintCheck` |
 | `mise run build` | ビルド（テスト・Lint 含む） | `./gradlew build` |
+| `mise run generate` | OpenAPI から API interface/DTO を生成 | `./gradlew openApiGenerate` |
 | `mise run db-up` | PostgreSQL 起動 | `docker compose up -d` |
 | `mise run db-stop` | PostgreSQL を止める（コンテナは残す） | `docker compose stop` |
 | `mise run db-reset` | PostgreSQL をデータごと作り直す | `docker compose down -v && up -d` |

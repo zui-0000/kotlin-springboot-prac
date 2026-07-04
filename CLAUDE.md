@@ -51,6 +51,10 @@ mise が有効でない非対話環境では `mise exec -- ./gradlew ...`（`bac
   `${VAR:デフォルト}` がそれを受ける。
 - Spring Boot 4 はオートコンフィグがモジュール分割された。Flyway には `spring-boot-flyway` が必要
   （`flyway-core` だけでは起動時に走らない）。
+- **API はスキーマ駆動**。`schema/openapi.yaml` が契約の正。openapi-generator で
+  `backend/build/generated/` に interface/DTO を生成し、Controller がそれを実装する。
+  生成コードは gitignore（コミットしない）。API 変更は openapi.yaml を編集して再生成。
+  詳細は [docs/19-openapi-codegen.md](docs/19-openapi-codegen.md)。
 
 ## 作業の進め方（このプロジェクトの流儀）
 

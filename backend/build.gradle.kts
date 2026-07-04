@@ -26,6 +26,8 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     // ktlint（Lint / フォーマット）
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
+    // OpenAPI からサーバの API interface / DTO を生成（スキーマ駆動）
+    id("org.openapi.generator") version "7.14.0"
 }
 
 // Flyway プラグインは buildscript 経由で適用（ドライバと同じクラスパスに乗せるため）
@@ -53,6 +55,8 @@ val exposedVersion = "1.3.1"
 dependencies {
     // --- Spring Boot ---
     implementation("org.springframework.boot:spring-boot-starter-web")
+    // OpenAPI 生成コードが使う @Valid / バリデーション制約（jakarta.validation）
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     // Exposed が使う DataSource（HikariCP）の自動設定を提供
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     // Kotlin を JSON 変換・リフレクションで扱うために必要
@@ -107,4 +111,52 @@ tasks.processResources {
     // schema.sql（参照用スナップショット）と dump スクリプトは実行時に不要なので jar に含めない。
     // ※ db/migration 配下は Flyway が実行時に読むため除外しない。
     exclude("db/schema.sql", "db/dump-schema.sh")
+}
+
+// --- OpenAPI コード生成（スキーマ駆動） ---
+// schema/openapi.yaml から API interface と DTO を生成する。
+// interfaceOnly: Controller は自前実装（Spring Boot 版への依存を減らし堅牢化）。
+openApiGenerate {
+    generatorName.set("kotlin-spring")
+    inputSpec.set("$rootDir/../schema/openapi.yaml")
+    outputDir.set(
+        layout.buildDirectory
+            .dir("generated/openapi")
+            .get()
+            .asFile.path,
+    )
+    apiPackage.set("com.example.prac.generated.api")
+    modelPackage.set("com.example.prac.generated.model")
+    configOptions.set(
+        mapOf(
+            "interfaceOnly" to "true",
+            "useSpringBoot3" to "true", // jakarta を使う。Boot4 も jakarta なので整合する
+            "documentationProvider" to "none", // swagger 依存を増やさない
+            "useTags" to "true", // tag ごとに API interface を分ける
+            "dateLibrary" to "java8", // java.time を使う
+        ),
+    )
+}
+
+// OpenAPI 仕様の妥当性を検証する（./gradlew openApiValidate / mise run schema-validate）
+openApiValidate {
+    inputSpec.set("$rootDir/../schema/openapi.yaml")
+    recommend.set(true) // 構文チェックに加えてベストプラクティスの推奨も出す
+}
+
+// 生成された Kotlin を main のソースに含める
+sourceSets.main {
+    kotlin.srcDir(layout.buildDirectory.dir("generated/openapi/src/main/kotlin"))
+}
+
+// コンパイル前に必ず生成する
+tasks.named("compileKotlin") {
+    dependsOn("openApiGenerate")
+}
+
+// 生成コードは ktlint の対象外にする
+ktlint {
+    filter {
+        exclude { it.file.path.contains("generated/openapi") }
+    }
 }

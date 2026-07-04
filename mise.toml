@@ -59,6 +59,16 @@ description = "ビルドする（テスト・Lint 含む）"
 dir = "backend"
 run = "./gradlew build"
 
+[tasks.generate]
+description = "OpenAPI(schema/openapi.yaml) から API interface / DTO を生成する"
+dir = "backend"
+run = "./gradlew openApiGenerate"
+
+[tasks.schema-validate]
+description = "OpenAPI(schema/openapi.yaml) の妥当性を検証する"
+dir = "backend"
+run = "./gradlew openApiValidate"
+
 [tasks.db-up]
 description = "PostgreSQL を起動する"
 dir = "backend"
