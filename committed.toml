@@ -1,0 +1,16 @@
+# commit メッセージの規約チェック（committed）
+# Conventional Commits（feat: / fix: / docs: ...）を強制する。
+
+style = "conventional"
+
+# --- 日本語コミット向けの調整 ---
+# 英語前提のチェックは日本語で誤検知するため無効化
+subject_capitalized = false   # 先頭大文字（日本語に大文字は無い）
+imperative_subject = false    # 命令形（英語の動詞前提）
+# CJK は文字幅で長さ判定が揺れるため、長さ制限は無効化
+subject_length = 0
+line_length = 0
+hard_line_length = 0
+
+# 許可する type（デフォルト踏襲）
+allowed_types = ["fix", "feat", "chore", "docs", "style", "refactor", "perf", "test"]

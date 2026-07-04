@@ -1,0 +1,16 @@
+# Git フック設定（lefthook）
+# 有効化: mise exec -- lefthook install（初回のみ）
+# 手動実行: mise exec -- lefthook run pre-commit
+
+# コミット前: Kotlin ファイルに変更があれば ktlint でチェック
+pre-commit:
+  commands:
+    ktlint:
+      glob: "*.{kt,kts}"
+      run: mise run lint
+
+# コミットメッセージ: Conventional Commits 規約に沿っているか committed で検証
+commit-msg:
+  commands:
+    committed:
+      run: committed --commit-file {1}
