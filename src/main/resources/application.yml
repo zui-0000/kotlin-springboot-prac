@@ -17,3 +17,6 @@ spring:
     enabled: true
     # マイグレーションファイルの置き場所（デフォルト）
     locations: classpath:db/migration
+    # タイムスタンプ方式のため有効化。
+    # 並行開発で「後から古い時刻のマイグレーション」がマージされても適用を許す。
+    out-of-order: true

@@ -67,3 +67,9 @@ tasks.withType<Test> {
     // Kotest は JUnit Platform 上で動くため必須
     useJUnitPlatform()
 }
+
+tasks.processResources {
+    // schema.sql（参照用スナップショット）と dump スクリプトは実行時に不要なので jar に含めない。
+    // ※ db/migration 配下は Flyway が実行時に読むため除外しない。
+    exclude("db/schema.sql", "db/dump-schema.sh")
+}
