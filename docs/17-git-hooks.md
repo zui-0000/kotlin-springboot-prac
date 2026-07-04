@@ -46,14 +46,19 @@ mise run hooks-install    # 中身は lefthook install
   refactor: Service層を整理
 ```
 
-使える type（`committed.toml` の `allowed_types`）:
-`feat` / `fix` / `docs` / `style` / `refactor` / `perf` / `test` / `chore`
+## 決めたルール（committed.toml で明示）
 
-### 日本語向けの調整（committed.toml）
-英語前提のチェックは無効化している:
-- `subject_capitalized = false`（日本語に大文字は無い）
-- `imperative_subject = false`（英語の命令形前提のため）
-- `subject_length = 0` / `line_length = 0`（CJK は文字幅で長さ判定が揺れるため無効化）
+全ルールを明示指定している（暗黙のデフォルトに頼らない）。要点:
+
+| 項目 | 決定 |
+|------|------|
+| 形式 | Conventional Commits を強制（`style = "conventional"`） |
+| type（11種） | `feat` `fix` `docs` `style` `refactor` `perf` `test` `chore` `build` `ci` `revert` |
+| scope | 任意・自由（`feat(message):` でも `feat:` でも可） |
+| 文字数制限 | 無し（CJK は文字幅で判定が揺れるため無効化） |
+| 末尾の句読点 | 禁止（ただし検出は ASCII の `.` `!` 等のみ。全角 `。` は committed が非対応） |
+| `fixup!` / `WIP` | 禁止 |
+| 大文字始まり / 命令形 | チェック無効（英語前提のため日本語では無効化） |
 
 ## TypeScript との対応
 
