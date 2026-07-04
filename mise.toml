@@ -16,6 +16,7 @@ committed = "1.1.11"
 # ---------------------------------------------------------------------------
 # タスクランナー: `mise run <名前>`（または `mise <名前>`）で実行できる。
 # 一覧は `mise tasks ls`。mise 経由なので JDK25 が有効な状態で走る。
+# ※ Kotlin アプリは backend/ にあるため、アプリ系タスクは dir = "backend" で実行する。
 # ---------------------------------------------------------------------------
 
 [tasks.hooks-install]
@@ -26,23 +27,28 @@ run = "lefthook install"
 description = "マイグレーション+schema.sql更新の後にアプリを起動する（local固定・SQLログ有り）"
 # 起動前に db-migrate（flywayMigrate → schema.sql 更新）を先に走らせる
 depends = ["db-migrate"]
+dir = "backend"
 env = { SPRING_PROFILES_ACTIVE = "local" }
 run = "./gradlew bootRun"
 
 [tasks.test]
 description = "テストを実行する（Kotest）"
+dir = "backend"
 run = "./gradlew test"
 
 [tasks.format]
 description = "Kotlin コードを自動整形する（ktlint）"
+dir = "backend"
 run = "./gradlew ktlintFormat"
 
 [tasks.lint]
 description = "Lint チェックを実行する（ktlint）"
+dir = "backend"
 run = "./gradlew ktlintCheck"
 
 [tasks.fix]
 description = "自動整形してから残りの違反をチェックする（format → check）"
+dir = "backend"
 run = [
   "./gradlew ktlintFormat",
   "./gradlew ktlintCheck",
@@ -50,22 +56,27 @@ run = [
 
 [tasks.build]
 description = "ビルドする（テスト・Lint 含む）"
+dir = "backend"
 run = "./gradlew build"
 
 [tasks.db-up]
 description = "PostgreSQL を起動する"
+dir = "backend"
 run = "docker compose up -d"
 
 [tasks.db-stop]
 description = "PostgreSQL を止める（コンテナは残す。再開は db-up）"
+dir = "backend"
 run = "docker compose stop"
 
 [tasks.db-reset]
 description = "PostgreSQL をデータごと作り直す"
+dir = "backend"
 run = "docker compose down -v && docker compose up -d"
 
 [tasks.db-migrate]
 description = "マイグレーションを実行し、schema.sql も更新する（アプリ起動なし）"
+dir = "backend"
 run = [
   "./gradlew flywayMigrate",
   "./src/main/resources/db/dump-schema.sh",

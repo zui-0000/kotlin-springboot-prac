@@ -95,15 +95,26 @@ curl localhost:8080/messages
 > 詳細は [docs/11-flyway-migrations.md](./docs/11-flyway-migrations.md) /
 > [docs/12-current-schema-visibility.md](./docs/12-current-schema-visibility.md)。
 
-## プロジェクト構成
+## プロジェクト構成（モノレポ）
+
+リポジトリ全体は「バックエンド + インフラ + スキーマ」の3本柱で構成する。
 
 ```
 kotlin-springboot-prac/
-├── build.gradle.kts          # ビルド設定・依存関係
-├── settings.gradle.kts       # プロジェクト構成の宣言
-├── mise.toml                 # JDK25 / Gradle9.6.1 をピン留め
+├── README.md / CLAUDE.md / mise.toml   # リポジトリ全体の設定・方針
+├── lefthook.yml / committed.toml       # Git フック・コミット規約（全体）
+├── docs/                               # 学習ノート（全体）
+├── backend/                            # Kotlin / Spring Boot アプリ
+├── schema/                             # OpenAPI 定義（API 契約・コード生成の起点）
+└── infrastructures/                    # Terraform（クラウドインフラ）
+```
+
+`backend/` の中身:
+
+```
+backend/
+├── build.gradle.kts / settings.gradle.kts / gradlew
 ├── docker-compose.yml        # ローカル PostgreSQL（接続情報を直書き）
-├── docs/                     # 学習ノート（技術選定・仕組み・ハマりどころ）
 └── src/
     ├── main/
     │   ├── kotlin/com/example/prac/
@@ -115,15 +126,17 @@ kotlin-springboot-prac/
     │   │       ├── MessageService.kt     # DSL でDB読み書き（@Transactional）
     │   │       └── MessageController.kt  # REST エンドポイント
     │   └── resources/
-    │       ├── application.yml           # 共通設定
-    │       ├── application-local.yml     # local プロファイル
+    │       ├── application.yml / application-local.yml
     │       └── db/
     │           ├── migration/            # Flyway マイグレーション
-    │           ├── schema.sql            # 現在スキーマの参照用スナップショット
+    │           ├── schema.sql            # 現在スキーマの参照用スナップショット（自動生成）
     │           └── dump-schema.sh        # schema.sql 生成スクリプト
-    └── test/
-        └── kotlin/com/example/prac/      # Kotest によるテスト
+    └── test/kotlin/com/example/prac/     # Kotest によるテスト
 ```
+
+> コマンドは `mise run <task>` に統一。アプリ系タスクは自動で `backend/` 内で実行される
+> （`mise.toml` の各タスクに `dir = "backend"` を設定）。詳細は
+> [docs/18-repository-structure.md](./docs/18-repository-structure.md)。
 
 ## ドキュメント
 

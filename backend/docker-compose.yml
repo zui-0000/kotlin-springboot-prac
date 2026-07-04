@@ -3,6 +3,9 @@
 # 停止: docker compose down       （データは残る）
 # 全消し: docker compose down -v   （ボリュームごと削除）
 #
+# プロジェクト名を固定（ディレクトリ名に依存させず、ボリューム名を安定させる）
+name: prac
+
 # 認証情報は「ローカル専用の使い捨て」なので直書きしている（秘密ではない）。
 # 本番/検証環境の DB は AWS Secret Manager 等から環境変数で注入する想定。
 # アプリ側は application.yml の ${POSTGRES_*:デフォルト} でこの値に接続する。
