@@ -93,7 +93,26 @@ spring:
 1. `V<タイムスタンプ>__<説明>.sql` を作る（例: `V20260705093000__add_title_to_messages.sql`）。
 2. 中に DDL を書く（`ALTER TABLE ...` など）。
 3. 必要なら Exposed の `Table` 定義も合わせて更新（[09-exposed.md](./09-exposed.md)）。
-4. アプリを起動すると Flyway が未適用分を自動適用する。
+4. マイグレーションを適用する（下記2通り）。
+
+## マイグレーションの適用方法（2通り・共存可能）
+
+同じ `flyway_schema_history` を見るため、どちらを使っても二重適用にはならない。
+
+| 方法 | コマンド | 仕組み | 向いている場面 |
+|------|---------|--------|--------------|
+| 起動時に自動 | `mise run dev` | `spring-boot-flyway`（ライブラリ）が起動時に流す | ローカル・学習・小規模 |
+| 単独コマンド | `mise run db-migrate` | Flyway Gradle プラグイン（`./gradlew flywayMigrate`） | 本番デプロイ前・複数インスタンス構成 |
+
+### なぜ本番では単独コマンドが好まれるか
+アプリを複数台で動かすと、全インスタンスが起動時に一斉にマイグレーションを試みて競合する。
+そのため「デプロイ前に単独コマンドで1回だけ流す → その後アプリ群を起動」と分離するのが定石。
+
+### Gradle プラグイン設定のハマりどころ
+- プラグインは `application.yml` を読まない → `build.gradle.kts` の `configure<FlywayExtension>` で接続先を指定。
+- プラグインは自前のクラスパスでドライバを探す → プロジェクトの `implementation` 依存とは別。
+  プラグイン本体・DB モジュール・JDBC ドライバを **buildscript クラスパスに同居**させないと
+  「No database found to handle jdbc:postgresql」エラーになる。
 
 > 適用済みの DB を作り直したいとき（ローカル開発のみ）:
 > `docker compose down -v && docker compose up -d` で DB をまっさらにして再適用。
