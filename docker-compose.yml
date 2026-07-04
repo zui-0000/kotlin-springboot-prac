@@ -2,21 +2,27 @@
 # 起動: docker compose up -d
 # 停止: docker compose down       （データは残る）
 # 全消し: docker compose down -v   （ボリュームごと削除）
+#
+# 認証情報は「ローカル専用の使い捨て」なので直書きしている（秘密ではない）。
+# 本番/検証環境の DB は AWS Secret Manager 等から環境変数で注入する想定。
+# アプリ側は application.yml の ${POSTGRES_*:デフォルト} でこの値に接続する。
 services:
   db:
-    image: postgres:17
+    image: postgres:18
     container_name: prac-postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: prac
+      POSTGRES_USER: prac
+      POSTGRES_PASSWORD: pracpass
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      # PostgreSQL 18+ はマウント先を /var/lib/postgresql（親）にする。
+      # データはこの下のバージョン別サブディレクトリに置かれる（pg_upgrade 対応のため）。
+      - pgdata:/var/lib/postgresql
     healthcheck:
       # DB が接続を受け付けられるまで待てるようにする
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U prac -d prac"]
       interval: 5s
       timeout: 3s
       retries: 5

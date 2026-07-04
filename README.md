@@ -11,7 +11,7 @@ Kotlin + Spring Boot によるサーバサイド開発の**学習用プロジェ
 | JDK | Java (Temurin) | 25 (LTS) |
 | フレームワーク | Spring Boot | 4.1.0 |
 | ビルド | Gradle (Kotlin DSL) | 9.6.1 |
-| DB | PostgreSQL | 17 |
+| DB | PostgreSQL | 18 |
 | ORM | Exposed | 1.3.1 |
 | マイグレーション | Flyway | (Boot 管理) |
 | Lint/Format | ktlint | 14.2.0 |
@@ -31,10 +31,7 @@ Kotlin + Spring Boot によるサーバサイド開発の**学習用プロジェ
 # 1. ツール（JDK25 / Gradle9.6.1）を導入
 mise install
 
-# 2. 環境変数ファイルを用意
-cp .env.example .env
-
-# 3. PostgreSQL を起動
+# 2. PostgreSQL を起動（接続情報は docker-compose.yml に直書き済み）
 mise run db-up
 ```
 
@@ -98,8 +95,7 @@ kotlin-springboot-prac/
 ├── build.gradle.kts          # ビルド設定・依存関係
 ├── settings.gradle.kts       # プロジェクト構成の宣言
 ├── mise.toml                 # JDK25 / Gradle9.6.1 をピン留め
-├── docker-compose.yml        # ローカル PostgreSQL
-├── .env.example              # 環境変数のサンプル（.env にコピーして使う）
+├── docker-compose.yml        # ローカル PostgreSQL（接続情報を直書き）
 ├── docs/                     # 学習ノート（技術選定・仕組み・ハマりどころ）
 └── src/
     ├── main/

@@ -12,18 +12,9 @@ set -euo pipefail
 
 # スクリプト自身の位置を基準にパスを解決（CWD に依存しない）
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# src/main/resources/db から 4 つ上がプロジェクトルート
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 OUT="$SCRIPT_DIR/schema.sql"
 
-# .env があれば読み込む（POSTGRES_USER 等）
-if [ -f "$PROJECT_ROOT/.env" ]; then
-  set -a
-  # shellcheck disable=SC1091
-  . "$PROJECT_ROOT/.env"
-  set +a
-fi
-
+# 接続情報は docker-compose.yml の直書き値に合わせる（環境変数があればそれを優先）
 CONTAINER="prac-postgres"
 DB_USER="${POSTGRES_USER:-prac}"
 DB_NAME="${POSTGRES_DB:-prac}"

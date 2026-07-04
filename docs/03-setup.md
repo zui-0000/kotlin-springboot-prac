@@ -8,10 +8,7 @@
 # 1. ツール（JDK25 / Gradle9.6.1）を導入
 mise install
 
-# 2. 環境変数ファイルを用意
-cp .env.example .env
-
-# 3. PostgreSQL を起動（バックグラウンド）
+# 2. PostgreSQL を起動（接続情報は docker-compose.yml に直書き済み）
 docker compose up -d
 ```
 

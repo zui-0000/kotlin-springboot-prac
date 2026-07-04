@@ -64,3 +64,33 @@ mise exec -- ./gradlew bootRun
 ### 対処（必要なら）
 `@org.hibernate.annotations.Generated` を付けて保存後に値を取得させる、
 または保存後にエンティティを再取得する。学習用の現状は許容。
+
+> 補足: 現在は ORM を Exposed に移行済み。Exposed 版では INSERT 後に再読込しているため
+> `createdAt` は返る（[09-exposed.md](./09-exposed.md) 参照）。
+
+---
+
+## 4. PostgreSQL 18 でコンテナが起動しない（データディレクトリの変更）
+
+### 症状
+`docker-compose.yml` のイメージを `postgres:17` → `postgres:18` に上げたら、
+コンテナが `Exited (1)` で起動しない。ログに
+`PostgreSQL data ... /var/lib/postgresql/data (unused mount/volume)` と出る。
+
+### 原因
+**PostgreSQL 18 の公式 Docker イメージでデータディレクトリの構造が変わった。**
+- 従来（〜17）: データを `/var/lib/postgresql/data` に置く
+- 18+: マウントは `/var/lib/postgresql`（親）にし、データは `18/` のような
+  **メジャーバージョン別サブディレクトリ**に置く（`pg_upgrade` をやりやすくするため）
+
+従来のマウント指定（`/var/lib/postgresql/data`）のままだと噛み合わずに落ちる。
+
+### 解決
+`docker-compose.yml` のマウント先を親ディレクトリに変更する。
+
+```yaml
+volumes:
+  - pgdata:/var/lib/postgresql   # 17 までは /var/lib/postgresql/data だった
+```
+
+ローカルのデータは使い捨てなので `docker compose down -v` で作り直せばよい。

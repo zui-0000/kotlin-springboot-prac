@@ -85,7 +85,7 @@ dependencies {
 
 // Flyway Gradle プラグインの接続設定。
 // ※ このプラグインは application.yml を読まないため、ここで接続先を指定する。
-//    値は .env と同じデフォルトを使い、環境変数があればそれを優先する。
+//    値は docker-compose.yml の直書き値に合わせ、環境変数があればそれを優先する。
 configure<FlywayExtension> {
     val port = System.getenv("POSTGRES_PORT") ?: "5432"
     val db = System.getenv("POSTGRES_DB") ?: "prac"
