@@ -31,9 +31,15 @@ Kotlin + Spring Boot によるサーバサイド開発の**学習用プロジェ
 # 1. ツール（JDK25 / Gradle9.6.1）を導入
 mise install
 
-# 2. PostgreSQL を起動（接続情報は docker-compose.yml に直書き済み）
+# 2. Git フックを有効化（コミット前チェック・メッセージ規約。clone後1回）
+mise run hooks-install
+
+# 3. PostgreSQL を起動（接続情報は docker-compose.yml に直書き済み）
 mise run db-up
 ```
+
+> コミットメッセージは Conventional Commits（`feat:` `fix:` `docs:` …）に従う。
+> 詳細は [docs/17-git-hooks.md](./docs/17-git-hooks.md)。
 
 ## 起動
 
@@ -67,6 +73,7 @@ curl localhost:8080/messages
 | `mise run db-stop` | PostgreSQL を止める（コンテナは残す） | `docker compose stop` |
 | `mise run db-reset` | PostgreSQL をデータごと作り直す | `docker compose down -v && up -d` |
 | `mise run db-migrate` | マイグレーション実行 + `schema.sql` 更新（アプリ起動なし） | `flywayMigrate` → `dump-schema.sh` |
+| `mise run hooks-install` | Git フックを有効化（clone 後1回） | `lefthook install` |
 
 ## DB マイグレーションのやり方
 

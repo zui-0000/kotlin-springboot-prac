@@ -18,6 +18,10 @@ committed = "1.1.11"
 # 一覧は `mise tasks ls`。mise 経由なので JDK25 が有効な状態で走る。
 # ---------------------------------------------------------------------------
 
+[tasks.hooks-install]
+description = "Git フック（lefthook）を有効化する（clone 後に1回だけ実行）"
+run = "lefthook install"
+
 [tasks.dev]
 description = "マイグレーション+schema.sql更新の後にアプリを起動する（local固定・SQLログ有り）"
 # 起動前に db-migrate（flywayMigrate → schema.sql 更新）を先に走らせる

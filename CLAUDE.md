@@ -51,4 +51,8 @@ mise が有効でない非対話環境では `mise exec -- ./gradlew ...` を使
   `docs/NN-*.md`（連番）として残し、`docs/README.md` の目次を更新する。
 - コミット / プッシュは **ユーザーが依頼したときだけ** 行う。
   コミットメッセージは日本語、末尾に `Co-Authored-By` を付ける。
+- **コミットメッセージは Conventional Commits 必須**（`feat:` `fix:` `docs:` `chore:` `refactor:`
+  `style:` `perf:` `test:`）。Git フック（lefthook + committed）で強制される。
+  非対話環境から commit する場合は、フックが lefthook/committed を見つけられるよう
+  `mise exec -- git commit ...` で実行する。フック未導入なら `mise run hooks-install`。
 - cSpell（スペルチェッカ）が技術用語（`prac` / `ktlint` / `kotest` 等）に出す警告は無害。無視してよい。
