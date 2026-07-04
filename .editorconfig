@@ -1,0 +1,33 @@
+# EditorConfig（https://editorconfig.org/）
+# エディタのインデント等を統一する。Cursor は editorconfig 拡張が読み取り、
+# ktlint もこの設定を参照する。
+
+root = true
+
+# 全ファイル共通の基本方針
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+# Kotlin: 公式規約に従い 4 スペース
+[*.{kt,kts}]
+indent_size = 4
+
+# 設定・データ系ファイルは 2 スペースが一般的
+[*.{yml,yaml,json,toml}]
+indent_size = 2
+
+# Terraform（infrastructures/）: 公式の terraform fmt が 2 スペース
+[*.{tf,tfvars}]
+indent_size = 2
+
+# TypeSpec（schema/）: TS 系の言語のため 2 スペース
+[*.tsp]
+indent_size = 2
+
+# Markdown は末尾スペースが改行の意味を持つことがあるため除外
+[*.md]
+trim_trailing_whitespace = false
