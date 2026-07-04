@@ -1,0 +1,67 @@
+# mise: backend（Kotlin/Spring アプリ）の開発ツールとタスク。
+# タスクはこの mise.toml のあるディレクトリ（backend/）を CWD として実行される。
+# そのため各タスクに dir 指定は不要。backend/ 内で `mise run <名前>` で実行する。
+# セットアップ: backend/ で `mise install`（親の lefthook/committed も併せて入る）。
+
+[tools]
+# Java 25 (Temurin, LTS)。Spring Boot 4 は Java 17〜26 に対応。
+java = "temurin-25.0.3+9.0.LTS"
+# Gradle 9.6.1（2026年時点の最新安定版）
+gradle = "9.6.1"
+
+[tasks.dev]
+description = "マイグレーション+schema.sql更新の後にアプリを起動する（local固定・SQLログ有り）"
+# 起動前に db-migrate（flywayMigrate → schema.sql 更新）を先に走らせる
+depends = ["db-migrate"]
+env = { SPRING_PROFILES_ACTIVE = "local" }
+run = "./gradlew bootRun"
+
+[tasks.test]
+description = "テストを実行する（Kotest）"
+run = "./gradlew test"
+
+[tasks.format]
+description = "Kotlin コードを自動整形する（ktlint）"
+run = "./gradlew ktlintFormat"
+
+[tasks.lint]
+description = "Lint チェックを実行する（ktlint）"
+run = "./gradlew ktlintCheck"
+
+[tasks.fix]
+description = "自動整形してから残りの違反をチェックする（format → check）"
+run = [
+  "./gradlew ktlintFormat",
+  "./gradlew ktlintCheck",
+]
+
+[tasks.build]
+description = "ビルドする（テスト・Lint 含む）"
+run = "./gradlew build"
+
+[tasks.generate]
+description = "OpenAPI(schema/openapi.yaml) から API interface / DTO を生成する"
+run = "./gradlew openApiGenerate"
+
+[tasks.schema-validate]
+description = "OpenAPI(schema/openapi.yaml) の妥当性を検証する"
+run = "./gradlew openApiValidate"
+
+[tasks.db-up]
+description = "PostgreSQL を起動する"
+run = "docker compose up -d"
+
+[tasks.db-stop]
+description = "PostgreSQL を止める（コンテナは残す。再開は db-up）"
+run = "docker compose stop"
+
+[tasks.db-reset]
+description = "PostgreSQL をデータごと作り直す"
+run = "docker compose down -v && docker compose up -d"
+
+[tasks.db-migrate]
+description = "マイグレーションを実行し、schema.sql も更新する（アプリ起動なし）"
+run = [
+  "./gradlew flywayMigrate",
+  "./src/main/resources/db/dump-schema.sh",
+]

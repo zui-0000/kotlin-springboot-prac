@@ -1,93 +1,15 @@
-# mise: 開発ツールのバージョン管理
-# このディレクトリに入ると、ここで指定したバージョンに自動で切り替わる。
-# セットアップ: `mise install` で下記ツールを一括インストール。
-# 確認: `mise current` / `java -version` / `gradle -version`
+# mise: リポジトリ全体のツールとタスク。
+# ※ backend（Kotlin/Spring）のツール・タスクは backend/mise.toml を参照。
+#    backend の操作は backend/ 内で `mise run <名前>` を実行する。
+# セットアップ: ルートで `mise install`（lefthook/committed）。
+#              backend/ でも `mise install` すると java/gradle も入る。
 
 [tools]
-# Java 25 (Temurin, LTS)。Spring Boot 4 は Java 17〜26 に対応。
-java = "temurin-25.0.3+9.0.LTS"
-# Gradle 9.6.1（2026年時点の最新安定版）
-gradle = "9.6.1"
 # Git フックマネージャ（Go製・言語非依存）
 lefthook = "2.1.9"
 # コミットメッセージの規約チェック（Rust製・Conventional Commits）
 committed = "1.1.11"
 
-# ---------------------------------------------------------------------------
-# タスクランナー: `mise run <名前>`（または `mise <名前>`）で実行できる。
-# 一覧は `mise tasks ls`。mise 経由なので JDK25 が有効な状態で走る。
-# ※ Kotlin アプリは backend/ にあるため、アプリ系タスクは dir = "backend" で実行する。
-# ---------------------------------------------------------------------------
-
 [tasks.hooks-install]
 description = "Git フック（lefthook）を有効化する（clone 後に1回だけ実行）"
 run = "lefthook install"
-
-[tasks.dev]
-description = "マイグレーション+schema.sql更新の後にアプリを起動する（local固定・SQLログ有り）"
-# 起動前に db-migrate（flywayMigrate → schema.sql 更新）を先に走らせる
-depends = ["db-migrate"]
-dir = "backend"
-env = { SPRING_PROFILES_ACTIVE = "local" }
-run = "./gradlew bootRun"
-
-[tasks.test]
-description = "テストを実行する（Kotest）"
-dir = "backend"
-run = "./gradlew test"
-
-[tasks.format]
-description = "Kotlin コードを自動整形する（ktlint）"
-dir = "backend"
-run = "./gradlew ktlintFormat"
-
-[tasks.lint]
-description = "Lint チェックを実行する（ktlint）"
-dir = "backend"
-run = "./gradlew ktlintCheck"
-
-[tasks.fix]
-description = "自動整形してから残りの違反をチェックする（format → check）"
-dir = "backend"
-run = [
-  "./gradlew ktlintFormat",
-  "./gradlew ktlintCheck",
-]
-
-[tasks.build]
-description = "ビルドする（テスト・Lint 含む）"
-dir = "backend"
-run = "./gradlew build"
-
-[tasks.generate]
-description = "OpenAPI(schema/openapi.yaml) から API interface / DTO を生成する"
-dir = "backend"
-run = "./gradlew openApiGenerate"
-
-[tasks.schema-validate]
-description = "OpenAPI(schema/openapi.yaml) の妥当性を検証する"
-dir = "backend"
-run = "./gradlew openApiValidate"
-
-[tasks.db-up]
-description = "PostgreSQL を起動する"
-dir = "backend"
-run = "docker compose up -d"
-
-[tasks.db-stop]
-description = "PostgreSQL を止める（コンテナは残す。再開は db-up）"
-dir = "backend"
-run = "docker compose stop"
-
-[tasks.db-reset]
-description = "PostgreSQL をデータごと作り直す"
-dir = "backend"
-run = "docker compose down -v && docker compose up -d"
-
-[tasks.db-migrate]
-description = "マイグレーションを実行し、schema.sql も更新する（アプリ起動なし）"
-dir = "backend"
-run = [
-  "./gradlew flywayMigrate",
-  "./src/main/resources/db/dump-schema.sh",
-]

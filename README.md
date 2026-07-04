@@ -27,24 +27,30 @@ Kotlin + Spring Boot によるサーバサイド開発の**学習用プロジェ
 
 ## セットアップ
 
-```bash
-# 1. ツール（JDK25 / Gradle9.6.1）を導入
-mise install
+mise 設定は2階層。リポジトリ全体（`lefthook`/`committed`）はルート、
+backend（`java`/`gradle` とアプリ系タスク）は `backend/mise.toml`。
 
-# 2. Git フックを有効化（コミット前チェック・メッセージ規約。clone後1回）
+```bash
+# 1. リポジトリ全体のツールを導入 & Git フックを有効化（ルートで）
+mise install
 mise run hooks-install
 
-# 3. PostgreSQL を起動（接続情報は docker-compose.yml に直書き済み）
+# 2. backend のツール（JDK25 / Gradle9.6.1）を導入 & PostgreSQL 起動（backend で）
+cd backend
+mise install
 mise run db-up
 ```
 
-> コミットメッセージは Conventional Commits（`feat:` `fix:` `docs:` …）に従う。
-> 詳細は [docs/17-git-hooks.md](./docs/17-git-hooks.md)。
+> **backend の操作は `backend/` 内で実行する**（`mise run dev` など）。
+> リポジトリ全体の操作（`hooks-install`）はルートで。詳細は
+> [docs/18-repository-structure.md](./docs/18-repository-structure.md)。
+> コミットメッセージは Conventional Commits（[docs/17-git-hooks.md](./docs/17-git-hooks.md)）。
 
 ## 起動
 
 ```bash
-# アプリ起動（local プロファイル固定・Flyway がマイグレーションを流してから起動する）
+# backend/ 内で。アプリ起動（local 固定・マイグレーション→schema.sql更新の後に起動）
+cd backend
 mise run dev
 ```
 
@@ -59,9 +65,10 @@ curl localhost:8080/messages
 ## コマンド一覧
 
 よく使う操作は **mise のタスク**にまとめてある（`mise run <名前>`、`mise <名前>` でも可）。
-一覧は `mise tasks ls`。mise 経由なので JDK25 が有効な状態で実行される。
+一覧は `mise tasks ls`。
+**`hooks-install` 以外は backend のタスク**なので `backend/` 内で実行する（`cd backend`）。
 
-| コマンド | 内容 | 実体 |
+| コマンド（backend/ で実行） | 内容 | 実体 |
 |----------|------|------|
 | `mise run dev` | マイグレーション+`schema.sql`更新の後にアプリ起動（local固定・SQL ログ有り） | `db-migrate` → `bootRun` |
 | `mise run test` | テスト実行（Kotest） | `./gradlew test` |
@@ -70,10 +77,16 @@ curl localhost:8080/messages
 | `mise run fix` | 整形してから残りをチェック（一発） | `ktlintFormat` → `ktlintCheck` |
 | `mise run build` | ビルド（テスト・Lint 含む） | `./gradlew build` |
 | `mise run generate` | OpenAPI から API interface/DTO を生成 | `./gradlew openApiGenerate` |
+| `mise run schema-validate` | OpenAPI 仕様の妥当性を検証 | `./gradlew openApiValidate` |
 | `mise run db-up` | PostgreSQL 起動 | `docker compose up -d` |
 | `mise run db-stop` | PostgreSQL を止める（コンテナは残す） | `docker compose stop` |
 | `mise run db-reset` | PostgreSQL をデータごと作り直す | `docker compose down -v && up -d` |
 | `mise run db-migrate` | マイグレーション実行 + `schema.sql` 更新（アプリ起動なし） | `flywayMigrate` → `dump-schema.sh` |
+
+リポジトリ全体のタスク（**ルートで実行**）:
+
+| コマンド（ルートで実行） | 内容 | 実体 |
+|----------|------|------|
 | `mise run hooks-install` | Git フックを有効化（clone 後1回） | `lefthook install` |
 
 ## DB マイグレーションのやり方

@@ -36,11 +36,21 @@ kotlin-springboot-prac/
 - アプリをルート直下に置いたままだと、リポジトリ全体のファイルと混在して見通しが悪い。
 - `backend/` に隔離することで、各コンポーネントの責務が明確になる。
 
-## コマンドの実行場所（重要）
-- 操作は `mise run <task>` に統一。
-- アプリ系タスク（`dev` / `test` / `build` / `db-*` など）は **`mise.toml` で `dir = "backend"`**
-  を指定しており、自動で `backend/` 内で実行される。手動で `cd backend` する必要はない。
-- `hooks-install`（lefthook）はリポジトリのルートで動く（Git フックはリポジトリ全体のため）。
+## mise 設定とコマンドの実行場所（重要）
+
+mise 設定は2階層に分割している。
+
+| 場所 | ツール | タスク |
+|------|--------|--------|
+| ルート `mise.toml` | `lefthook` / `committed` | `hooks-install` |
+| `backend/mise.toml` | `java` / `gradle` | `dev` / `test` / `fix` / `build` / `generate` / `schema-validate` / `db-*` |
+
+- **backend のタスクは `backend/` 内で実行**する（`cd backend && mise run <task>`）。
+  タスクは定義元の config ディレクトリ（backend/）を CWD として動くため、`dir` 指定は不要。
+- mise は親子の config をマージする: **backend からは親（ルート）のタスク（`hooks-install`）も見える**。
+  逆に**ルートからは backend タスクは見えない**（＝「backend の操作は backend から」を実現）。
+- Git フック（lefthook）はリポジトリのルートで動くため、backend タスクを呼ぶ箇所は
+  `cd backend && mise run ...` としている。
 
 ## 注意
 - `backend/` へ移動する前に書かれた一部の docs では、パスを `src/...` のように
