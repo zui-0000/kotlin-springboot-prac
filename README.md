@@ -41,6 +41,13 @@ mise install
 mise run db-up
 ```
 
+### エディタ（Cursor）の Kotlin 拡張
+
+Cursor で Kotlin を書くなら **JetBrains 公式の Kotlin 拡張**を入れる（IntelliJ エンジン）。
+community 製の `fwcd.kotlin` は本リポジトリのようなモノレポで赤線（`Unresolved reference`）が
+消えないため、公式拡張の VSIX を手動導入するのが確実。手順は
+[docs/20-editor-setup.md](./docs/20-editor-setup.md) を参照。
+
 > **backend の操作は `backend/` 内で実行する**（`mise run dev` など）。
 > リポジトリ全体の操作（`hooks-install`）はルートで。詳細は
 > [docs/18-repository-structure.md](./docs/18-repository-structure.md)。

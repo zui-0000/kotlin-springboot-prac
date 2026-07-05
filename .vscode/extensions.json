@@ -2,9 +2,9 @@
   // このプロジェクトを Cursor / VS Code で開いたときに推薦される拡張機能。
   // 推薦: コマンドパレット → "Extensions: Show Recommended Extensions" で確認できる。
   "recommendations": [
-    // Kotlin 言語サポート（補完・定義ジャンプ・診断）。community 製 (fwcd)。
-    // ※ JetBrains 公式版は Open VSX 未掲載のため、Cursor では fwcd 版を使用。
-    "fwcd.kotlin",
+    // Kotlin 言語サポートは JetBrains 公式拡張（IntelliJ エンジン）を使う。
+    // ただし公式版は Open VSX 未掲載で VSIX 手動導入のため、ここには載せられない。
+    // → 導入手順は docs/20-editor-setup.md。
     "streetsidesoftware.code-spell-checker",
     "mikestead.dotenv",
     "editorconfig.editorconfig",
