@@ -10,17 +10,35 @@
 プロジェクト理解が段違いで、**本リポジトリのようなモノレポでも赤線が解消する**。
 
 - Marketplace ID: `JetBrains.kotlin-server`
-- ※ Cursor の拡張ストア（Open VSX）には無いため、**VSIX を手動で入れる**。
+- 入れ方はエディタで異なる（下記）。導入後の手順は共通。
 
-### 導入手順
+### 導入手順（A: VS Code — 簡単）
+VS Code は Microsoft 公式マーケットプレイスを使い、そこに公式拡張が載っている。
+1. 拡張パネルで **「Kotlin by JetBrains」** を検索し、**Install** を押すだけ（VSIX 不要）。
+2. 以降は「導入後（共通）」へ。
+
+### 導入手順（B: Cursor — VSIX 手動）
+Cursor は拡張ストアに **Open VSX** を使い、そこには公式拡張が無いため VSIX を手動で入れる。
 1. リリースページを開く: <https://github.com/Kotlin/kotlin-lsp/releases>
 2. **「Kotlin by JetBrains extension for VS Code」**の欄から、自分の OS/アーキテクチャの VSIX を DL。
    - **Apple Silicon（M1/M2/M3 系）→ `macOS-arm64`**
    - Intel Mac → `macOS-x64`
    - ※ 下段の「Standalone Kotlin LSP Archive」は VS Code 以外のエディタ用。**選ばない**。
 3. Cursor の**拡張パネルに VSIX をドラッグ&ドロップ**（または `Cmd+Shift+P` → "Install from VSIX"）。
-4. **`fwcd.kotlin` は無効化 or アンインストール**（Kotlin 拡張が2つあると競合する）。
+
+### 導入後（共通）
+4. **`fwcd.kotlin` は必ず無効化 or アンインストール**（下記「Kotlin 拡張は1つだけ」参照）。
 5. **Reload Window** → 初回はプロジェクト取り込みに1〜数分かかる。完了すると赤線が消える。
+
+> その他のセットアップ（mise / `.vscode/tasks.json` / モノレポ構成 / Git フック等）は
+> **エディタ非依存**で、VS Code / Cursor どちらでもそのまま使える。
+
+## Kotlin 拡張は「1つだけ」にする（競合注意）
+公式拡張と `fwcd.kotlin` を**両方有効にすると、機能が壊れる**（補完・**定義ジャンプ(Cmd+クリック)**が
+効かない等）。必ずどちらか一方だけにする。
+- 症状: 「Cmd+クリックで定義に飛べない」→ まず 2つ入っていないか確認し、`fwcd.kotlin` を無効化。
+- それでもダメなら: 索引(取り込み)完了を待つ／`F12` で切り分け／`editor.multiCursorModifier` を
+  `alt` に（`cmd` だと Cmd+クリックが複数カーソル追加に取られる）。
 
 ### 注意
 - まだ **Alpha 版**。基本機能（補完・定義ジャンプ・診断）は十分だが、粗さが残る場合はある。
