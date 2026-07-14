@@ -1,11 +1,10 @@
-package com.example.prac.message
+package com.example.prac.message.infrastructure
 
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.javatime.timestampWithTimeZone
 
-// messages テーブルの Exposed 定義。
-// スキーマの「正」は Flyway (V1__create_messages_table.sql)。
-// ここはそのテーブルに「合わせて」書く（自動生成はしない: spring.exposed.generate-ddl=false）。
+// messages テーブルの Exposed 定義。infrastructure 層の実装詳細。
+// スキーマの「正」は Flyway (V*__create_messages_table.sql)。ここはそれに"合わせて"書く。
 object Messages : Table("messages") {
     val id = long("id").autoIncrement()
     val content = text("content")
