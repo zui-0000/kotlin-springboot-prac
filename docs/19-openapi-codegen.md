@@ -67,6 +67,49 @@ class MessageController(private val service: MessageService) : MessagesApi {
 - ルーティング（`@RequestMapping` 等）と入出力の型は**生成 interface が持つ**。
 - Controller はサービス呼び出しと「ドメイン ⇔ 生成 DTO」の変換だけを担う。
 
+## エンドポイントが増えるとどうなるか（タグ設計）
+
+`configOptions` の **`useTags = true`** により、operation を **tag ごとにグループ化して
+1タグ = 1インターフェース**を生成する。つまり構造はこう:
+
+```
+openapi.yaml の tag  =  生成インターフェース  =  Controller
+   tags: [messages]  →     MessagesApi       →  MessageController
+   tags: [items]     →     ItemsApi          →  ItemController
+```
+
+**1タグ = 1 Api インターフェース = 1 Controller** が、リソース単位で1対1に対応する。
+これは DDD の「機能で割る（1リソース=1 Controller）」と噛み合う（[21](./21-ddd-cqrs-structure.md)）。
+
+### 増え方は2パターン
+
+- **同じリソースにエンドポイント追加（同じ tag）** → 既存インターフェースにメソッドが増える。
+  例: `messages` に `GET /messages/{id}` を足すと `MessagesApi` に `getMessage()` が増え、
+  `MessageController` がそれを `override` するだけ。インターフェースは1つのまま。
+- **新しいリソース追加（新しい tag）** → 新インターフェース + 新 Controller。
+  例: `tags: [items]` を付けた `/items` を書くと `ItemsApi` が生成され、
+  `item/presentation/ItemController : ItemsApi` を実装する。
+
+### 規約：1機能（境界づけられたコンテキスト）= 1タグ
+
+タグをバラバラに付けると生成インターフェースが変な粒度で割れる。
+**`message` は `messages` タグ、`item` は `items` タグ**、と機能パッケージと1対1で揃える。
+こうすると「生成インターフェース ↔ Controller ↔ 機能パッケージ」が綺麗に並ぶ。
+
+### spec が巨大化したら `$ref` でファイル分割
+
+`openapi.yaml` 一枚が読みにくくなったら、パス定義やスキーマを外部ファイルへ切り出せる:
+
+```yaml
+paths:
+  /messages:
+    $ref: "./paths/messages.yaml"
+  /items:
+    $ref: "./paths/items.yaml"
+```
+
+**正は `openapi.yaml` のまま**、中身を機能単位に分割する（「機能で割る」の延長）。今は1リソースなので不要。
+
 ## ハマりどころ・判断メモ
 
 - **Spring Boot 4 対応**: openapi-generator の kotlin-spring は Boot4 対応が新しめ。
