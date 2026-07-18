@@ -2,11 +2,12 @@ package com.example.prac.message.application.query
 
 import com.example.prac.message.application.dto.MessageDto
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
-// Query Handler: 純粋な読み取りCRUD。認可は持たない（UseCase 層の責務）。
+// Query Handler = 読み取りユースケース本体。トランザクション境界はここ（readOnly）。
 // QueryService から Projection を受け取り、DTO に詰め替えて Result に包んで返す。
-// トランザクション境界は呼び出し元の UseCase(@Transactional(readOnly)) にある。
 @Service
+@Transactional(readOnly = true)
 class ListMessagesQueryHandler(
     private val queryService: IMessageQueryService,
 ) {

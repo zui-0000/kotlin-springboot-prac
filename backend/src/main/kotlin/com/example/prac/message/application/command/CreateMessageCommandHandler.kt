@@ -5,11 +5,13 @@ import com.example.prac.message.domain.IMessageRepository
 import com.example.prac.message.domain.Message
 import com.example.prac.message.domain.MessageContent
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
-// Command Handler: 純粋な書き込みCRUD。認可は持たない（認可は UseCase 層の責務）。
-// トランザクション境界は呼び出し元の UseCase(@Transactional) にあるため、ここには付けない。
+// Command Handler = 書き込みユースケース本体。トランザクション境界はここ。
 // 素の入力を VO(MessageContent) に変換（この時点で検証が走る）→ 永続化 → DTO で結果を返す。
+// 複数の repository / domain service を束ねる協調もここに書いてよい（ただし他の Handler は呼ばない）。
 @Service
+@Transactional
 class CreateMessageCommandHandler(
     private val repository: IMessageRepository,
 ) {
