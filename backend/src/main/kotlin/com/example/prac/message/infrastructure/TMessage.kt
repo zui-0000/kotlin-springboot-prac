@@ -3,9 +3,10 @@ package com.example.prac.message.infrastructure
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.javatime.timestampWithTimeZone
 
-// messages テーブルの Exposed 定義。infrastructure 層の実装詳細。
-// スキーマの「正」は Flyway (V*__create_messages_table.sql)。ここはそれに"合わせて"書く。
-object Messages : Table("messages") {
+// t_message テーブルの Exposed 定義。infrastructure 層の実装詳細。
+// スキーマの「正」は Flyway。ここはそれに"合わせて"書く。
+// テーブル名は命名規則（トランザクション系=t_・単数形）に従い t_message。
+object TMessage : Table("t_message") {
     val id = long("id").autoIncrement()
     val content = text("content")
 

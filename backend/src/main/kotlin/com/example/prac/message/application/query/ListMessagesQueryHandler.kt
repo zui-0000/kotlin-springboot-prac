@@ -1,15 +1,22 @@
 package com.example.prac.message.application.query
 
+import com.example.prac.message.application.dto.MessageDto
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
-// Query Handler: 読み取りユースケースの本体。
-// ポート経由で View を取得して返すだけ。ドメイン・集約・リポジトリを通さないのが CQRS の読み経路。
-// readOnly = true で読み取り専用トランザクションにする（最適化のヒント）。
+// Query Handler: 純粋な読み取りCRUD。認可は持たない（UseCase 層の責務）。
+// QueryService から Projection を受け取り、DTO に詰め替えて Result に包んで返す。
+// トランザクション境界は呼び出し元の UseCase(@Transactional(readOnly)) にある。
 @Service
-@Transactional(readOnly = true)
 class ListMessagesQueryHandler(
     private val queryService: IMessageQueryService,
 ) {
-    fun handle(query: ListMessagesQuery): List<MessageView> = queryService.listAll()
+    fun handle(query: ListMessagesQuery): ListMessagesQueryResult = ListMessagesQueryResult(queryService.listAll().map { it.toDto() })
+
+    // Projection → DTO
+    private fun MessageProjection.toDto() =
+        MessageDto(
+            id = id,
+            content = content,
+            createdAt = createdAt,
+        )
 }

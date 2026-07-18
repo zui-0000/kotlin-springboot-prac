@@ -2,37 +2,29 @@ package com.example.prac.message.presentation
 
 import com.example.prac.generated.api.MessagesApi
 import com.example.prac.generated.model.CreateMessageRequest
-import com.example.prac.message.application.command.CreateMessageCommand
-import com.example.prac.message.application.command.CreateMessageCommandHandler
-import com.example.prac.message.application.query.ListMessagesQuery
-import com.example.prac.message.application.query.ListMessagesQueryHandler
-import com.example.prac.message.application.query.MessageView
-import com.example.prac.message.domain.Message
+import com.example.prac.message.application.dto.MessageDto
+import com.example.prac.message.usecase.CreateMessageUseCase
+import com.example.prac.message.usecase.ListMessagesUseCase
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
-import com.example.prac.generated.model.Message as MessageDto
+import com.example.prac.generated.model.Message as MessageResponse
 
 // プレゼン層。OpenAPI(schema/openapi.yaml)から生成された MessagesApi を実装する（契約優先）。
-// 書き込みは Command Handler、読み取りは Query Handler へ振り分ける（CQRS のディスパッチ）。
-// Controller の責務は「生成 DTO ⇔ Command/Query・View/集約」の変換とハンドラ呼び出しだけ。
+// 責務は「UseCase の呼び出し」と「結果の DTO → 生成レスポンスへの変換」のみ。
+// Request → Command/Query の変換や認可・ビジネスフローは UseCase 層に委ねる。
 @RestController
 class MessageController(
-    private val createMessageCommandHandler: CreateMessageCommandHandler,
-    private val listMessagesQueryHandler: ListMessagesQueryHandler,
+    private val createMessageUseCase: CreateMessageUseCase,
+    private val listMessagesUseCase: ListMessagesUseCase,
 ) : MessagesApi {
-    // 読み取り経路: Query → Handler → View → 生成 DTO
-    override fun listMessages(): ResponseEntity<List<MessageDto>> =
-        ResponseEntity.ok(listMessagesQueryHandler.handle(ListMessagesQuery()).map { it.toDto() })
+    // 読み取り: UseCase → QueryResult(DTOのリスト) → 生成レスポンスへ変換
+    override fun listMessages(): ResponseEntity<List<MessageResponse>> =
+        ResponseEntity.ok(listMessagesUseCase.execute().messages.map { it.toResponse() })
 
-    // 書き込み経路: 生成リクエスト → Command → Handler → 集約 → 生成 DTO
-    override fun createMessage(createMessageRequest: CreateMessageRequest): ResponseEntity<MessageDto> =
-        ResponseEntity.ok(
-            createMessageCommandHandler.handle(CreateMessageCommand(createMessageRequest.content)).toDto(),
-        )
+    // 書き込み: 生成リクエストを UseCase へ渡す（Request→Command 変換は UseCase の責務）→ 生成レスポンスへ変換
+    override fun createMessage(createMessageRequest: CreateMessageRequest): ResponseEntity<MessageResponse> =
+        ResponseEntity.ok(createMessageUseCase.execute(createMessageRequest).message.toResponse())
 
-    // 読み取りモデル(View) → 生成 DTO
-    private fun MessageView.toDto() = MessageDto(id = id, content = content, createdAt = createdAt)
-
-    // 書き込み結果のドメイン集約 → 生成 DTO（VO から素の値を取り出す）
-    private fun Message.toDto() = MessageDto(id = id.value, content = content.value, createdAt = createdAt)
+    // アプリの DTO → 生成レスポンス(Message)
+    private fun MessageDto.toResponse() = MessageResponse(id = id, content = content, createdAt = createdAt)
 }
