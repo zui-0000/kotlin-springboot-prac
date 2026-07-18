@@ -2,6 +2,9 @@
 .gradle/
 build/
 
+# OpenAPI 生成コード（build/ の外・プロジェクト直下に出すが、生成物なので追跡しない）
+generated/
+
 # Kotlin 拡張(fwcd)が生成するコンパイル出力。ビルド生成物なので追跡しない。
 bin/
 

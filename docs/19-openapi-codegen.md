@@ -8,13 +8,15 @@
 backend/schema/openapi.yaml  … API の契約（唯一の正・手書き）
       │ openapi-generator（kotlin-spring）
       ▼
-backend/build/generated/openapi/  … MessagesApi(interface) + DTO（自動生成）
+backend/generated/openapi/  … MessagesApi(interface) + DTO（自動生成・build/ の外）
       │
 backend の Controller が生成 interface を実装
 ```
 
 - **契約優先（contract-first）**: 先に API 仕様を決め、それに従って実装する。
-- 生成コードは `build/` 配下（**gitignore 対象**）。ビルドごとに再生成するのでコミットしない。
+- 生成コードは `backend/generated/`（**gitignore 対象**）。ビルドごとに再生成するのでコミットしない。
+  build/ の外に置くのは「生成ソースは見つけやすい場所に・コンパイル物だけ build/ に」という分離のため
+  （`build/` はコンパイル結果 = クラス/jar だけになる）。
   （`schema.sql` は追跡するが、こちらは追跡しない。役割が違う）
 
 ## なぜ OpenAPI（生 YAML）で、TypeSpec ではないか
@@ -34,7 +36,7 @@ plugins {
 openApiGenerate {
     generatorName.set("kotlin-spring")
     inputSpec.set("$rootDir/schema/openapi.yaml")   // backend/schema/ を参照
-    outputDir.set(layout.buildDirectory.dir("generated/openapi")...)
+    outputDir.set("$projectDir/generated/openapi")   // build/ の外・gitignore 対象
     apiPackage.set("com.example.prac.generated.api")
     modelPackage.set("com.example.prac.generated.model")
     configOptions.set(mapOf(
@@ -46,8 +48,9 @@ openApiGenerate {
     ))
 }
 
-sourceSets.main { kotlin.srcDir(...generated/openapi/src/main/kotlin) }  // 生成物を main に含める
+sourceSets.main { kotlin.srcDir("$projectDir/generated/openapi/src/main/kotlin") }  // 生成物を main に含める
 tasks.named("compileKotlin") { dependsOn("openApiGenerate") }           // コンパイル前に生成
+tasks.named<Delete>("clean") { delete("$projectDir/generated") }        // build/ の外なので clean で明示削除
 ktlint { filter { exclude { it.file.path.contains("generated/openapi") } } }  // 生成物は lint 対象外
 ```
 

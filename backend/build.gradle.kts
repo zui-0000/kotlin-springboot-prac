@@ -119,12 +119,8 @@ tasks.processResources {
 openApiGenerate {
     generatorName.set("kotlin-spring")
     inputSpec.set("$rootDir/schema/openapi.yaml")
-    outputDir.set(
-        layout.buildDirectory
-            .dir("generated/openapi")
-            .get()
-            .asFile.path,
-    )
+    // 生成物は build/ の外・プロジェクト直下の generated/ に出す（見つけやすく・非コミット）。
+    outputDir.set("$projectDir/generated/openapi")
     apiPackage.set("com.example.prac.generated.api")
     modelPackage.set("com.example.prac.generated.model")
     configOptions.set(
@@ -146,7 +142,12 @@ openApiValidate {
 
 // 生成された Kotlin を main のソースに含める
 sourceSets.main {
-    kotlin.srcDir(layout.buildDirectory.dir("generated/openapi/src/main/kotlin"))
+    kotlin.srcDir("$projectDir/generated/openapi/src/main/kotlin")
+}
+
+// build/ の外（generated/）に生成するため、clean 時に明示的に削除する
+tasks.named<Delete>("clean") {
+    delete("$projectDir/generated")
 }
 
 // コンパイル前に必ず生成する
