@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class ListMessagesQueryHandler(
-    private val queryPort: MessageQueryPort,
+    private val queryService: IMessageQueryService,
 ) {
-    fun handle(query: ListMessagesQuery): List<MessageView> = queryPort.listAll()
+    fun handle(query: ListMessagesQuery): List<MessageView> = queryService.listAll()
 }

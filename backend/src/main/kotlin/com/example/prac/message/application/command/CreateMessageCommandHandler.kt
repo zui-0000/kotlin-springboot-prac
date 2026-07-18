@@ -1,8 +1,8 @@
 package com.example.prac.message.application.command
 
+import com.example.prac.message.domain.IMessageRepository
 import com.example.prac.message.domain.Message
 import com.example.prac.message.domain.MessageContent
-import com.example.prac.message.domain.MessageRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional
 class CreateMessageCommandHandler(
-    private val repository: MessageRepository,
+    private val repository: IMessageRepository,
 ) {
     fun handle(command: CreateMessageCommand): Message = repository.create(MessageContent(command.content))
 }

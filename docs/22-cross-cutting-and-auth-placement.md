@@ -29,7 +29,7 @@ data class Item(val message: Message)
 data class Item(val relatedMessageId: Long)
 
 // ✅ 良い: 中身が要るなら相手の application 層（公開窓口 = Port/Handler）越しに呼ぶ
-class SomeItemHandler(private val messageQueryPort: MessageQueryPort)
+class SomeItemHandler(private val messageQueryService: IMessageQueryService)
 ```
 
 > TS で言えば「`features/item` が `features/message` の内部実装を import して直接触る」のを避ける感覚。
@@ -49,18 +49,18 @@ class SomeItemHandler(private val messageQueryPort: MessageQueryPort)
 **読み取り用の Query 側**を呼ぶべき。repository 直呼びは「層が違う＋サイドが違う」の二重の誤り。
 
 ```kotlin
-// item/application/query/ItemQueryPort.kt  ← item が "公開する窓口"（正面玄関）
-interface ItemQueryPort {
+// item/application/query/IItemQueryService.kt  ← item が "公開する窓口"（正面玄関）
+interface IItemQueryService {
     fun findView(id: Long): ItemView?
 }
 
 // order/application/command/CreateOrderCommandHandler.kt
 class CreateOrderCommandHandler(
     private val orderRepository: OrderRepository,   // 自分のは repository でOK
-    private val itemQueryPort: ItemQueryPort,        // 他機能は "公開窓口" を注入（repository ではない）
+    private val itemQueryService: IItemQueryService,        // 他機能は "公開窓口" を注入（repository ではない）
 ) {
     fun handle(cmd: CreateOrderCommand): Order {
-        itemQueryPort.findView(cmd.itemId)
+        itemQueryService.findView(cmd.itemId)
             ?: throw ItemNotFoundException(cmd.itemId)   // 別コンテキストへの判定は Query 越しに
         // ... order 集約を組み立てて orderRepository.save(...)
     }
@@ -71,7 +71,7 @@ class CreateOrderCommandHandler(
 
 | | 提供側が公開（Published Interface） | 消費側が所有（ACL / 腐敗防止層） |
 |---|---|---|
-| どうする | `item` が `ItemQueryPort` を公開、`order` が注入 | `order` が自分の言葉で `ItemChecker` を定義し adapter で `item` を呼ぶ |
+| どうする | `item` が `IItemQueryService` を公開、`order` が注入 | `order` が自分の言葉で `ItemChecker` を定義し adapter で `item` を呼ぶ |
 | 依存の向き | `order` → `item` の公開契約 | `order` → 自分の port（`item` を直接知らない） |
 | コスト | 軽い | 重い（interface + adapter） |
 | いつ | **モジュラモノリスの初手・推奨** | 相手のモデルが食い違う / 将来サービス分離する時 |
@@ -83,9 +83,9 @@ interface ItemChecker {
     fun requireExists(itemId: Long)
 }
 // order/infrastructure/ItemCheckerAdapter.kt  ← item を呼んで order の port を満たす（翻訳層）
-class ItemCheckerAdapter(private val itemQueryPort: ItemQueryPort) : ItemChecker {
+class ItemCheckerAdapter(private val itemQueryService: IItemQueryService) : ItemChecker {
     override fun requireExists(itemId: Long) {
-        itemQueryPort.findView(itemId) ?: throw ItemNotFoundException(itemId)
+        itemQueryService.findView(itemId) ?: throw ItemNotFoundException(itemId)
     }
 }
 ```
@@ -93,7 +93,7 @@ class ItemCheckerAdapter(private val itemQueryPort: ItemQueryPort) : ItemChecker
 **依存の向き（許可 / 禁止）**:
 
 ```
-order/application  ──呼ぶ──▶  item/application (ItemQueryPort)      ✅ 正面玄関どうし
+order/application  ──呼ぶ──▶  item/application (IItemQueryService)      ✅ 正面玄関どうし
 order/application  ──✕──▶     item/infrastructure (ItemRepository)   ❌ 裏口・禁止
 order/domain       ──✕──▶     item/domain (Item 集約)                ❌ 境界破壊・禁止
 ```
