@@ -23,7 +23,8 @@ DB_NAME="${POSTGRES_DB:-prac}"
 # pg_dump は定義を複数文に分割する（CREATE SEQUENCE / ALTER ...）ため、
 # MySQL の mysqldump のように1文へ集約したい場合は、この自前クエリ方式を使う。
 #   - 自動採番（default が nextval(...) の列）は bigserial/serial 表記に戻す
-#   - PRIMARY KEY はインラインで出力
+#   - 制約（PRIMARY KEY / UNIQUE / FOREIGN KEY）は pg_get_constraintdef でインライン出力する
+#     （NOT NULL は列側にインライン。PG18 でカタログ化された not-null 制約 contype='n' は別行に出さない）
 #   - flyway_schema_history（Flyway 管理テーブル）は除外
 # 先頭に「編集禁止」の警告ヘッダを付けてから、生成した CREATE TABLE を書き出す。
 # psql オプション: -t 値のみ / -A 整形なし / -X psqlrc無視 / -q 静音
@@ -66,12 +67,10 @@ FROM (
       WHERE a.attrelid = c.oid AND a.attnum > 0 AND NOT a.attisdropped
     )
     || COALESCE(
-      (SELECT E',\n    PRIMARY KEY (' || string_agg(quote_ident(att.attname), ', ' ORDER BY k.ord) || ')'
+      (SELECT E',\n' || string_agg('    ' || pg_get_constraintdef(con.oid),
+                E',\n' ORDER BY CASE con.contype WHEN 'p' THEN 0 WHEN 'u' THEN 1 ELSE 2 END, con.conname)
        FROM pg_constraint con
-       CROSS JOIN LATERAL unnest(con.conkey) WITH ORDINALITY AS k(attnum, ord)
-       JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = k.attnum
-       WHERE con.conrelid = c.oid AND con.contype = 'p'
-       GROUP BY con.oid),
+       WHERE con.conrelid = c.oid AND con.contype IN ('p', 'u', 'f')),
       ''
     )
     || E'\n);' AS table_ddl
