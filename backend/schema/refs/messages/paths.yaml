@@ -1,0 +1,81 @@
+# messages 機能の path item を1ファイルに集約する。
+# openapi.yaml からは JSON ポインタ(#/collection・#/member)で各 path に紐づける。
+# collection = /messages（一覧・登録） / member = /messages/{id}（更新・削除）。
+# collection/member は REST の語彙（コレクション・リソース / メンバー・リソース）。全機能でこの2キーに揃える。
+
+collection:
+  get:
+    operationId: listMessages
+    summary: メッセージ一覧を取得する
+    tags: [messages]
+    responses:
+      "200":
+        description: メッセージの一覧
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "./model/Message.yaml"
+  post:
+    operationId: createMessage
+    summary: メッセージを登録する
+    tags: [messages]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "./model/CreateMessageRequest.yaml"
+    responses:
+      "200":
+        description: 登録されたメッセージ
+        content:
+          application/json:
+            schema:
+              $ref: "./model/Message.yaml"
+
+member:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: メッセージ ID
+      schema:
+        type: integer
+        format: int64
+  get:
+    operationId: getMessage
+    summary: メッセージを1件取得する
+    tags: [messages]
+    responses:
+      "200":
+        description: 取得したメッセージ
+        content:
+          application/json:
+            schema:
+              $ref: "./model/Message.yaml"
+  put:
+    operationId: updateMessage
+    summary: メッセージを更新する
+    tags: [messages]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "./model/UpdateMessageRequest.yaml"
+    responses:
+      "200":
+        description: 更新されたメッセージ
+        content:
+          application/json:
+            schema:
+              $ref: "./model/Message.yaml"
+  delete:
+    operationId: deleteMessage
+    summary: メッセージを削除する
+    tags: [messages]
+    responses:
+      "204":
+        description: 削除成功（本文なし）

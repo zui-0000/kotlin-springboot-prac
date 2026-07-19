@@ -134,6 +134,17 @@ openApiGenerate {
     )
 }
 
+// $ref で分割した spec 断片（refs/**・model/**）も入力として追跡する。
+// openApiGenerate は既定では inputSpec(openapi.yaml)しか監視しないため、$ref 先の
+// paths.yaml / model/*.yaml "だけ" を編集すると UP-TO-DATE 判定で再生成が走らない。
+// schema/ 配下すべてを入力に加えることで、どの断片を触っても再生成されるようにする。
+tasks.named<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerate") {
+    inputs
+        .dir("$rootDir/schema")
+        .withPropertyName("openapiSpecFiles")
+        .withPathSensitivity(org.gradle.api.tasks.PathSensitivity.RELATIVE)
+}
+
 // OpenAPI 仕様の妥当性を検証する（./gradlew openApiValidate / mise run schema-validate）
 openApiValidate {
     inputSpec.set("$rootDir/schema/openapi.yaml")
