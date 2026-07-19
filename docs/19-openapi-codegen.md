@@ -5,15 +5,17 @@
 ## 全体像
 
 ```
-backend/schema/openapi.yaml  … API の契約（唯一の正・手書き）
+backend/schema/openapi.yaml      … API 契約の入口（$ref を束ねる司令塔・手書き）
+backend/schema/refs/<feature>/   … 機能ごとに分割した契約の実体（paths.yaml + model/）
       │ openapi-generator（kotlin-spring）
       ▼
-backend/generated/openapi/  … MessagesApi(interface) + DTO（自動生成・build/ の外）
+backend/generated/openapi/       … MessagesApi(interface) + DTO（自動生成・build/ の外）
       │
 backend の Controller が生成 interface を実装
 ```
 
 - **契約優先（contract-first）**: 先に API 仕様を決め、それに従って実装する。
+- 契約は**機能ごとにファイル分割**している（下記「spec のファイル分割」）。`openapi.yaml` は入口だけ。
 - 生成コードは `backend/generated/`（**gitignore 対象**）。ビルドごとに再生成するのでコミットしない。
   build/ の外に置くのは「生成ソースは見つけやすい場所に・コンパイル物だけ build/ に」という分離のため
   （`build/` はコンパイル結果 = クラス/jar だけになる）。
@@ -35,7 +37,7 @@ plugins {
 
 openApiGenerate {
     generatorName.set("kotlin-spring")
-    inputSpec.set("$rootDir/schema/openapi.yaml")   // backend/schema/ を参照
+    inputSpec.set("$rootDir/schema/openapi.yaml")   // 入口の openapi.yaml を指定
     outputDir.set("$projectDir/generated/openapi")   // build/ の外・gitignore 対象
     apiPackage.set("com.example.prac.generated.api")
     modelPackage.set("com.example.prac.generated.model")
@@ -48,6 +50,12 @@ openApiGenerate {
     ))
 }
 
+// $ref 先の分割ファイルも入力として追跡する（詳細は「ハマりどころ」の "再生成されない罠"）。
+tasks.named<GenerateTask>("openApiGenerate") {
+    inputs.dir("$rootDir/schema").withPropertyName("openapiSpecFiles")
+        .withPathSensitivity(org.gradle.api.tasks.PathSensitivity.RELATIVE)
+}
+
 sourceSets.main { kotlin.srcDir("$projectDir/generated/openapi/src/main/kotlin") }  // 生成物を main に含める
 tasks.named("compileKotlin") { dependsOn("openApiGenerate") }           // コンパイル前に生成
 tasks.named<Delete>("clean") { delete("$projectDir/generated") }        // build/ の外なので clean で明示削除
@@ -58,14 +66,20 @@ ktlint { filter { exclude { it.file.path.contains("generated/openapi") } } }  //
 
 ```kotlin
 @RestController
-class MessageController(private val service: MessageService) : MessagesApi {
-    override fun listMessages(): ResponseEntity<List<MessageDto>> = ...
-    override fun createMessage(req: CreateMessageRequest): ResponseEntity<MessageDto> = ...
+class MessageController(
+    private val createMessageCommandHandler: CreateMessageCommandHandler,
+    private val listMessagesQueryHandler: ListMessagesQueryHandler,
+) : MessagesApi {
+    override fun listMessages(): ResponseEntity<List<MessageResponse>> = ...
+    override fun createMessage(req: CreateMessageRequest): ResponseEntity<MessageResponse> = ...
+    // 生成モデル(com.example.prac.generated.model.Message)は MessageResponse として import している
 }
 ```
 
 - ルーティング（`@RequestMapping` 等）と入出力の型は**生成 interface が持つ**。
-- Controller はサービス呼び出しと「ドメイン ⇔ 生成 DTO」の変換だけを担う。
+- Controller は「生成 Request → Command/Query 変換」「Handler(= ユースケース) 呼び出し」
+  「結果 DTO → 生成レスポンス変換」だけを担う（CQRS の 4 層構成。[21](./21-ddd-cqrs-structure.md)）。
+- `override` が必須な理由・ルーティングの紐づけ方は [25](./25-spring-ioc-di.md) と Controller の KDoc を参照。
 
 ## エンドポイントが増えるとどうなるか（タグ設計）
 
@@ -96,22 +110,93 @@ openapi.yaml の tag  =  生成インターフェース  =  Controller
 **`message` は `messages` タグ、`item` は `items` タグ**、と機能パッケージと1対1で揃える。
 こうすると「生成インターフェース ↔ Controller ↔ 機能パッケージ」が綺麗に並ぶ。
 
-### spec が巨大化したら `$ref` でファイル分割
+## spec のファイル分割（`$ref`・機能で割る）
 
-`openapi.yaml` 一枚が読みにくくなったら、パス定義やスキーマを外部ファイルへ切り出せる:
+`openapi.yaml` 一枚に全部を書かず、**機能ごとにファイル分割**している。`openapi.yaml` は
+`$ref` を束ねる入口（司令塔）だけにし、実体は `refs/<feature>/` に閉じる（「機能で割る」の延長）。
 
-```yaml
-paths:
-  /messages:
-    $ref: "./paths/messages.yaml"
-  /items:
-    $ref: "./paths/items.yaml"
+```
+schema/
+  openapi.yaml              # 入口: info / servers / paths(=$ref) だけ
+  refs/
+    messages/
+      paths.yaml            # collection(/messages) + member(/messages/{id})
+      model/
+        Message.yaml
+        CreateMessageRequest.yaml
+        UpdateMessageRequest.yaml
 ```
 
-**正は `openapi.yaml` のまま**、中身を機能単位に分割する（「機能で割る」の延長）。今は1リソースなので不要。
+```yaml
+# openapi.yaml — paths は各機能の path item を $ref で指すだけ
+paths:
+  /messages:
+    $ref: "./refs/messages/paths.yaml#/collection"
+  /messages/{id}:
+    $ref: "./refs/messages/paths.yaml#/member"
+```
+
+### なぜ path が2エントリ必要か（1つの `$ref` にできない）
+
+`paths` は「URL 文字列 → Path Item」のマップ（TS の `Record<string, PathItem>`）。`/messages` と
+`/messages/{id}` は**別 URL = 別キー**なので、エントリも2つ要る。`$ref` を置けるのは各 Path Item の
+位置までで、**`paths` マップ本体は `$ref` 非対応**（マップ全体を1参照で差し替えることはできない）。
+エントリ数 = URL の数、であってファイル分割の都合ではない。
+
+### 1機能 = 1 paths.yaml（JSON ポインタで path item を持つ）
+
+機能の path を**1ファイルに集約**するため、`paths.yaml` の中に path item を**キー付きで**並べ、
+`openapi.yaml` から JSON ポインタ（`#/collection`・`#/member`）で参照する。
+
+```yaml
+# refs/messages/paths.yaml
+collection:            # /messages       … コレクション・リソース（一覧・登録）
+  get: { operationId: listMessages, ... }
+  post: { operationId: createMessage, ... }
+member:                # /messages/{id}  … メンバー・リソース（取得・更新・削除）
+  parameters:          # {id} は配下の get/put/delete で共有
+    - { name: id, in: path, required: true, schema: { type: integer, format: int64 } }
+  get: { operationId: getMessage, ... }
+  put: { operationId: updateMessage, ... }
+  delete: { operationId: deleteMessage, ... }
+```
+
+**規約**: キー名は REST の語彙で **`collection`（複数の集まり）/ `member`（その1要素）**に統一する。
+これは Rails の "collection routes / member routes" と同じ対で、全機能でこの2キーに揃える。
+
+- **`item` ではなく `member`** を採用（`member` が REST の正確な用語）。
+- **キーを URL 文字列にしない**（`/messages` をキーにすると JSON ポインタで `/` を `~1` に
+  エスケープする必要が出て `#/~1messages~1{id}` のように読めなくなる）。短い英単語キーにする。
+- モデル参照は `paths.yaml` からの相対パス（`$ref: "./model/Message.yaml"`）。
+
+### 別リソースを追加するとき
+
+`refs/items/paths.yaml` と `refs/items/model/` を掘り、`openapi.yaml` に
+`/items:` `/items/{id}:` の `$ref` を足すだけ。生成側は `useTags` により `ItemsApi` +
+`ItemController` が1対1で対応する（上記「タグ設計」）。
+
+> 外部ファイル `$ref` 分割・JSON ポインタ参照とも、生成結果（クラス名・`@RequestMapping`・
+> `@PathVariable`）は一枚 spec と**完全に同一**であることを実測で確認済み。
 
 ## ハマりどころ・判断メモ
 
+- **`$ref` 分割ファイルが再生成されない罠（重要）**: `openApiGenerate` は既定で
+  `inputSpec`（= `openapi.yaml`）**しか** up-to-date 判定の入力にしない。そのため
+  `openapi.yaml` を触らず `refs/**/paths.yaml` や `model/*.yaml` **だけ**を編集すると、
+  Gradle が「変更なし」と判断して `UP-TO-DATE` で**再生成をスキップ**する
+  （= コード変更が反映されず「なんで反映されないの?」にハマる）。
+  対策として `openApiGenerate` の入力に **`schema/` ディレクトリ全体**を宣言している:
+
+  ```kotlin
+  tasks.named<GenerateTask>("openApiGenerate") {
+      inputs.dir("$rootDir/schema").withPropertyName("openapiSpecFiles")
+          .withPathSensitivity(org.gradle.api.tasks.PathSensitivity.RELATIVE)
+  }
+  ```
+
+  これで分割ファイルのどれを編集しても再生成が走る。**単一ファイル spec なら踏まなかった、
+  分割の代償**として発生する罠なので、`$ref` 分割とセットで必須の設定。
+  （応急処置としては `./gradlew openApiGenerate --rerun-tasks` で強制再生成もできる）
 - **Spring Boot 4 対応**: openapi-generator の kotlin-spring は Boot4 対応が新しめ。
   `interfaceOnly = true` + `useSpringBoot3 = true`（jakarta）にすることで、
   Boot 版に依存しにくい形（interface + DTO のみ）で生成し、Boot 4.1 でコンパイル・動作を確認済み。
