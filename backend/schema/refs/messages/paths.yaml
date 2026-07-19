@@ -42,8 +42,8 @@ member:
       required: true
       description: メッセージ ID
       schema:
-        type: integer
-        format: int64
+        type: string
+        format: uuid
   get:
     operationId: getMessage
     summary: メッセージを1件取得する

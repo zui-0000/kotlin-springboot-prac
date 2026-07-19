@@ -31,12 +31,29 @@ class MessageController(
     override fun listMessages(): ResponseEntity<List<MessageResponse>> =
         ResponseEntity.ok(listMessagesQueryHandler.handle(ListMessagesQuery()).messages.map { it.toResponse() })
 
-    /** `POST /messages` — メッセージを登録する（[MessagesApi.createMessage] の実装）。 */
+    /**
+     * `POST /messages` — メッセージを登録する（[MessagesApi.createMessage] の実装）。
+     * userId は当面リクエスト由来の暫定入力（認証実装時に auth コンテキストへ差し替える）。
+     */
     override fun createMessage(createMessageRequest: CreateMessageRequest): ResponseEntity<MessageResponse> =
         ResponseEntity.ok(
-            createMessageCommandHandler.handle(CreateMessageCommand(createMessageRequest.content)).message.toResponse(),
+            createMessageCommandHandler
+                .handle(
+                    CreateMessageCommand(
+                        userId = createMessageRequest.userId,
+                        content = createMessageRequest.content,
+                    ),
+                ).message
+                .toResponse(),
         )
 
     /** アプリの [MessageDto] → 生成レスポンス(Message) へ変換する。 */
-    private fun MessageDto.toResponse() = MessageResponse(id = id, content = content, createdAt = createdAt)
+    private fun MessageDto.toResponse() =
+        MessageResponse(
+            id = id,
+            userId = userId,
+            content = content,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
 }

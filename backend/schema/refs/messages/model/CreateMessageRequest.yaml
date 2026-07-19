@@ -1,6 +1,12 @@
+# userId は本来ログイン中のユーザー(認証コンテキスト)から得るべき値。
+# 認証が未実装のため、当面はリクエストで受け取る暫定形（認証実装時に body から外す）。
 type: object
-required: [content]
+required: [userId, content]
 properties:
+  userId:
+    type: string
+    format: uuid
+    example: "0198f7a2-1b2c-7000-8000-000000000001"
   content:
     type: string
     example: "こんにちは"

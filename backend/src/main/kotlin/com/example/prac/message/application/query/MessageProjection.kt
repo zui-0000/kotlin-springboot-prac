@@ -1,6 +1,7 @@
 package com.example.prac.message.application.query
 
 import java.time.OffsetDateTime
+import java.util.UUID
 
 // Projection: QueryService(読み取り)が返す "生の読みモデル"。
 // DB の SELECT 結果をそのまま表し、ドメイン集約は通さない（CQRS の読み経路）。
@@ -9,7 +10,9 @@ import java.time.OffsetDateTime
 // application の IMessageQueryService が返す型のため、依存の向き(infra → application)を
 // 守るべく application 側に置く。これが唯一の意図的な逸脱。
 data class MessageProjection(
-    val id: Long,
+    val id: UUID,
+    val userId: UUID,
     val content: String,
     val createdAt: OffsetDateTime,
+    val updatedAt: OffsetDateTime,
 )

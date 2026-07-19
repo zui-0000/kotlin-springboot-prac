@@ -17,7 +17,9 @@ class ListMessagesQueryHandler(
     private fun MessageProjection.toDto() =
         MessageDto(
             id = id,
+            userId = userId,
             content = content,
             createdAt = createdAt,
+            updatedAt = updatedAt,
         )
 }
