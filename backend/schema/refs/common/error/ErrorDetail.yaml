@@ -1,0 +1,10 @@
+# フィールド単位のエラー詳細(バリデーション等)。BadRequestError の details 要素。
+type: object
+required: [field, message]
+properties:
+  field:
+    type: string
+    example: "content"
+  message:
+    type: string
+    example: "content must not be blank"

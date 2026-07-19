@@ -1,0 +1,5 @@
+# 汎用スカラー: 総ページ数。
+type: integer
+format: int32
+minimum: 0
+example: 10

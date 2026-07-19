@@ -1,22 +1,36 @@
 # messages 機能の path item を1ファイルに集約する。
 # openapi.yaml からは JSON ポインタ(#/collection・#/member)で各 path に紐づける。
-# collection = /messages（一覧・登録） / member = /messages/{id}（更新・削除）。
+# collection = /messages（一覧・登録） / member = /messages/{id}（取得・更新・削除）。
 # collection/member は REST の語彙（コレクション・リソース / メンバー・リソース）。全機能でこの2キーに揃える。
+#
+# レスポンスはエンベロープ(result / meta [/ pagination])。型は per-operation の Response/Result に切り出す。
+# エラー本体(400/404)は common/error を参照。500 は本文なし。詳細は docs/19。
 
 collection:
   get:
     operationId: listMessages
     summary: メッセージ一覧を取得する
     tags: [messages]
+    parameters:
+      - name: currentPage
+        in: query
+        required: false
+        schema:
+          $ref: "../common/pagination/CurrentPage.yaml"
+      - name: perPage
+        in: query
+        required: false
+        schema:
+          $ref: "../common/pagination/PerPage.yaml"
     responses:
       "200":
-        description: メッセージの一覧
+        description: メッセージ一覧（エンベロープ + ページネーション）
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: "./model/Message.yaml"
+              $ref: "./MessageListResponse.yaml"
+      "500":
+        description: サーバエラー（本文なし）
   post:
     operationId: createMessage
     summary: メッセージを登録する
@@ -26,14 +40,22 @@ collection:
       content:
         application/json:
           schema:
-            $ref: "./model/CreateMessageRequest.yaml"
+            $ref: "./MessageCreateRequest.yaml"
     responses:
-      "200":
-        description: 登録されたメッセージ
+      "201":
+        description: 登録されたメッセージ（エンベロープ）
         content:
           application/json:
             schema:
-              $ref: "./model/Message.yaml"
+              $ref: "./MessageCreateResponse.yaml"
+      "400":
+        description: リクエスト不正
+        content:
+          application/json:
+            schema:
+              $ref: "../common/error/BadRequestError.yaml"
+      "500":
+        description: サーバエラー（本文なし）
 
 member:
   parameters:
@@ -42,19 +64,26 @@ member:
       required: true
       description: メッセージ ID
       schema:
-        type: string
-        format: uuid
+        $ref: "../common/model/Uuid.yaml"
   get:
     operationId: getMessage
     summary: メッセージを1件取得する
     tags: [messages]
     responses:
       "200":
-        description: 取得したメッセージ
+        description: 取得したメッセージ（エンベロープ）
         content:
           application/json:
             schema:
-              $ref: "./model/Message.yaml"
+              $ref: "./MessageGetResponse.yaml"
+      "404":
+        description: メッセージが見つからない
+        content:
+          application/json:
+            schema:
+              $ref: "../common/error/NotFoundError.yaml"
+      "500":
+        description: サーバエラー（本文なし）
   put:
     operationId: updateMessage
     summary: メッセージを更新する
@@ -64,14 +93,24 @@ member:
       content:
         application/json:
           schema:
-            $ref: "./model/UpdateMessageRequest.yaml"
+            $ref: "./MessageUpdateRequest.yaml"
     responses:
-      "200":
-        description: 更新されたメッセージ
+      "204":
+        description: 更新成功（本文なし）
+      "400":
+        description: リクエスト不正
         content:
           application/json:
             schema:
-              $ref: "./model/Message.yaml"
+              $ref: "../common/error/BadRequestError.yaml"
+      "404":
+        description: メッセージが見つからない
+        content:
+          application/json:
+            schema:
+              $ref: "../common/error/NotFoundError.yaml"
+      "500":
+        description: サーバエラー（本文なし）
   delete:
     operationId: deleteMessage
     summary: メッセージを削除する
@@ -79,3 +118,11 @@ member:
     responses:
       "204":
         description: 削除成功（本文なし）
+      "404":
+        description: メッセージが見つからない
+        content:
+          application/json:
+            schema:
+              $ref: "../common/error/NotFoundError.yaml"
+      "500":
+        description: サーバエラー（本文なし）

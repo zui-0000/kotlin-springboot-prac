@@ -1,0 +1,5 @@
+# 汎用スカラー: 総件数。
+type: integer
+format: int64
+minimum: 0
+example: 100

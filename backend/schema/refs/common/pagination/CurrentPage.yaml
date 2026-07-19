@@ -1,0 +1,5 @@
+# 汎用スカラー: 現在のページ番号(1 始まり)。
+type: integer
+format: int32
+minimum: 1
+example: 1

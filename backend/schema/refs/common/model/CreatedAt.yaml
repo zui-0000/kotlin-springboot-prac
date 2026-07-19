@@ -1,0 +1,4 @@
+# 汎用スカラー: 作成日時。
+type: string
+format: date-time
+example: "2026-07-20T12:00:00Z"

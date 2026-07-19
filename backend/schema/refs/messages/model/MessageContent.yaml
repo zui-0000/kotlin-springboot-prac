@@ -1,0 +1,6 @@
+# リソース固有スカラー: メッセージ本文(1〜1000文字)。
+# 制約はドメインの MessageContent VO(MAX_LENGTH=1000)と揃える。
+type: string
+minLength: 1
+maxLength: 1000
+example: "こんにちは"

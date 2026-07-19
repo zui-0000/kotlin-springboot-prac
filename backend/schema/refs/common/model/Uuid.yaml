@@ -1,0 +1,4 @@
+# 汎用スカラー: UUID(v7)。ドメイン非依存の識別子表現。
+type: string
+format: uuid
+example: "0198f7a2-1b2c-7000-8000-000000000000"

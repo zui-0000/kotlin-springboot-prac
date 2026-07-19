@@ -1,0 +1,14 @@
+# データ本体: メッセージ1件。エンベロープ Response の result に載る。
+type: object
+required: [id, userId, content, createdAt, updatedAt]
+properties:
+  id:
+    $ref: "../common/model/Uuid.yaml"
+  userId:
+    $ref: "../common/model/Uuid.yaml"
+  content:
+    $ref: "./model/MessageContent.yaml"
+  createdAt:
+    $ref: "../common/model/CreatedAt.yaml"
+  updatedAt:
+    $ref: "../common/model/UpdatedAt.yaml"

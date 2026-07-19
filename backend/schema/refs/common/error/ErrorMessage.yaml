@@ -1,0 +1,3 @@
+# 汎用スカラー: エラーメッセージ(例外名など)。
+type: string
+example: "ResourceNotFoundException"

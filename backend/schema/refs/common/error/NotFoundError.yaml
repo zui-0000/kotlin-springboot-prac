@@ -1,0 +1,10 @@
+# 404 エラーレスポンス本体。error でラップせずフラットに返す(HTTP ステータスが既にエラーを表すため)。
+type: object
+required: [errorCode, message, meta]
+properties:
+  errorCode:
+    $ref: "./ErrorCode.yaml"
+  message:
+    $ref: "./ErrorMessage.yaml"
+  meta:
+    $ref: "../meta/CommonResponseMeta.yaml"

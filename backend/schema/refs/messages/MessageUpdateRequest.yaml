@@ -1,0 +1,6 @@
+# メッセージ更新の入力ボディ。所有者(userId)は変更不可のため content のみ。
+type: object
+required: [content]
+properties:
+  content:
+    $ref: "./model/MessageContent.yaml"

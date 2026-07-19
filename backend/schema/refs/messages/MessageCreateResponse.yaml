@@ -1,0 +1,8 @@
+# メッセージ作成のレスポンス全体(エンベロープ: result + meta)。
+type: object
+required: [result, meta]
+properties:
+  result:
+    $ref: "./MessageCreateResult.yaml"
+  meta:
+    $ref: "../common/meta/CommonResponseMeta.yaml"

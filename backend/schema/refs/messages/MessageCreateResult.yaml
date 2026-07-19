@@ -1,0 +1,14 @@
+# データ本体: 作成されたメッセージ1件。作成した id 等を返すため result に載せる。
+type: object
+required: [id, userId, content, createdAt, updatedAt]
+properties:
+  id:
+    $ref: "../common/model/Uuid.yaml"
+  userId:
+    $ref: "../common/model/Uuid.yaml"
+  content:
+    $ref: "./model/MessageContent.yaml"
+  createdAt:
+    $ref: "../common/model/CreatedAt.yaml"
+  updatedAt:
+    $ref: "../common/model/UpdatedAt.yaml"

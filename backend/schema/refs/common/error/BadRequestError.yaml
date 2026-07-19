@@ -1,0 +1,14 @@
+# 400 エラーレスポンス本体。details のみ持つ(フィールド単位のバリデーション結果, 任意)。
+type: object
+required: [errorCode, message, meta]
+properties:
+  errorCode:
+    $ref: "./ErrorCode.yaml"
+  message:
+    $ref: "./ErrorMessage.yaml"
+  meta:
+    $ref: "../meta/CommonResponseMeta.yaml"
+  details:
+    type: array
+    items:
+      $ref: "./ErrorDetail.yaml"

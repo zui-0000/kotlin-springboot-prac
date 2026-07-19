@@ -1,0 +1,7 @@
+# 全レスポンス共通のメタ情報。「レスポンス自体に関する情報」(いつ返したか等)。
+# データセットに関する情報(件数・ページ)は pagination として分離する。
+type: object
+required: [respondedAt]
+properties:
+  respondedAt:
+    $ref: "./RespondedAt.yaml"

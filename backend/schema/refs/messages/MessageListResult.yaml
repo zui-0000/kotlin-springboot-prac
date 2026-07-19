@@ -1,0 +1,14 @@
+# データ本体: 一覧の1要素(メッセージ1件)。将来 Get と項目が分かれても良いよう別ファイルにする。
+type: object
+required: [id, userId, content, createdAt, updatedAt]
+properties:
+  id:
+    $ref: "../common/model/Uuid.yaml"
+  userId:
+    $ref: "../common/model/Uuid.yaml"
+  content:
+    $ref: "./model/MessageContent.yaml"
+  createdAt:
+    $ref: "../common/model/CreatedAt.yaml"
+  updatedAt:
+    $ref: "../common/model/UpdatedAt.yaml"

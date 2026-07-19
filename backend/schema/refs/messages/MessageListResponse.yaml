@@ -1,0 +1,12 @@
+# メッセージ一覧のレスポンス全体(エンベロープ: result[] + meta + pagination)。
+type: object
+required: [result, meta, pagination]
+properties:
+  result:
+    type: array
+    items:
+      $ref: "./MessageListResult.yaml"
+  meta:
+    $ref: "../common/meta/CommonResponseMeta.yaml"
+  pagination:
+    $ref: "./MessageListPagination.yaml"

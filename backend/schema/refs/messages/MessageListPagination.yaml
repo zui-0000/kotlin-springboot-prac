@@ -1,0 +1,12 @@
+# 一覧レスポンスのページネーション情報。common/pagination のスカラーから必要分をピックする。
+type: object
+required: [totalCount, totalPages, currentPage, perPage]
+properties:
+  totalCount:
+    $ref: "../common/pagination/TotalCount.yaml"
+  totalPages:
+    $ref: "../common/pagination/TotalPages.yaml"
+  currentPage:
+    $ref: "../common/pagination/CurrentPage.yaml"
+  perPage:
+    $ref: "../common/pagination/PerPage.yaml"
