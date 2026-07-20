@@ -1,4 +1,4 @@
-package com.example.prac.user.domain
+package com.example.prac.user.domain.model
 
 import java.util.UUID
 

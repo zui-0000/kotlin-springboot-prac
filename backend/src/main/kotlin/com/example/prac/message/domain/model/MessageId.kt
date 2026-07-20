@@ -1,4 +1,4 @@
-package com.example.prac.message.domain
+package com.example.prac.message.domain.model
 
 import java.util.UUID
 

@@ -1,6 +1,8 @@
 package com.example.prac.message.domain
 
-import com.example.prac.user.domain.UserId
+import com.example.prac.message.domain.model.Message
+import com.example.prac.message.domain.model.MessageContent
+import com.example.prac.user.domain.model.UserId
 
 // リポジトリ interface。ドメインが「永続化に何を求めるか」を定義し、"所有" する。
 // 実装（Exposed）は infrastructure 層に置く（依存性逆転: infra → domain の向き）。

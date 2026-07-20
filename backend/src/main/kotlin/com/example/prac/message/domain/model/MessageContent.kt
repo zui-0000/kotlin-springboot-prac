@@ -1,4 +1,4 @@
-package com.example.prac.message.domain
+package com.example.prac.message.domain.model
 
 // 値オブジェクト（Value Object）: メッセージ本文。
 // バリデーションを VO の init に閉じ込めることで、「不正な MessageContent は存在し得ない」

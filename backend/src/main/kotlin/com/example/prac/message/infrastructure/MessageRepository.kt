@@ -1,10 +1,10 @@
 package com.example.prac.message.infrastructure
 
 import com.example.prac.message.domain.IMessageRepository
-import com.example.prac.message.domain.Message
-import com.example.prac.message.domain.MessageContent
-import com.example.prac.message.domain.MessageId
-import com.example.prac.user.domain.UserId
+import com.example.prac.message.domain.model.Message
+import com.example.prac.message.domain.model.MessageContent
+import com.example.prac.message.domain.model.MessageId
+import com.example.prac.user.domain.model.UserId
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.insert

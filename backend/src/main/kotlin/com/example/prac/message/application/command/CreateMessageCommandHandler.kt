@@ -1,29 +1,36 @@
 package com.example.prac.message.application.command
 
-import com.example.prac.message.application.dto.MessageDto
+import com.example.prac.generated.model.CommonResponseMeta
+import com.example.prac.generated.model.MessageCreateResponse
+import com.example.prac.generated.model.MessageCreateResult
 import com.example.prac.message.domain.IMessageRepository
-import com.example.prac.message.domain.Message
-import com.example.prac.message.domain.MessageContent
-import com.example.prac.user.domain.UserId
+import com.example.prac.message.domain.model.Message
+import com.example.prac.message.domain.model.MessageContent
+import com.example.prac.user.domain.model.UserId
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.OffsetDateTime
 
 // Command Handler = 書き込みユースケース本体。トランザクション境界はここ。
-// 素の入力を VO(UserId / MessageContent) に変換（この時点で検証が走る）→ 永続化 → DTO で結果を返す。
-// 複数の repository / domain service を束ねる協調もここに書いてよい（ただし他の Handler は呼ばない）。
+// 出力は生成スキーマ型(MessageCreateResponse=エンベロープ)を直接組んで返す方針。
+// これにより application → generated の依存を許容する代わりに、出力 DTO の二重定義を無くす。
+// （domain(Message/VO)は generated 非依存を維持。変換はこの handler が担う）
 @Service
 @Transactional
 class CreateMessageCommandHandler(
     private val repository: IMessageRepository,
 ) {
-    fun handle(command: CreateMessageCommand): CreateMessageCommandResult {
+    fun handle(command: CreateMessageCommand): MessageCreateResponse {
         val message = repository.create(UserId(command.userId), MessageContent(command.content))
-        return CreateMessageCommandResult(message.toDto())
+        return MessageCreateResponse(
+            result = message.toResult(),
+            meta = CommonResponseMeta(respondedAt = OffsetDateTime.now()),
+        )
     }
 
-    // ドメイン集約 → DTO
-    private fun Message.toDto() =
-        MessageDto(
+    // ドメイン集約 → 生成レスポンスの Result
+    private fun Message.toResult() =
+        MessageCreateResult(
             id = id.value,
             userId = userId.value,
             content = content.value,

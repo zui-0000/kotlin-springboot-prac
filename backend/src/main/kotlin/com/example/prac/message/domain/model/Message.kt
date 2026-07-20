@@ -1,6 +1,6 @@
-package com.example.prac.message.domain
+package com.example.prac.message.domain.model
 
-import com.example.prac.user.domain.UserId
+import com.example.prac.user.domain.model.UserId
 import java.time.OffsetDateTime
 
 // 集約ルート（Aggregate Root）: "すでに存在するメッセージ" を表すドメインモデル。
