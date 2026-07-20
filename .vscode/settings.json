@@ -1,4 +1,10 @@
 {
     "java.compile.nullAnalysis.mode": "disabled",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    // markdownlint に自動生成物を無視させる（openapi-generator の出力など）。
+    // これらは gitignore 対象の生成物で、手で直しても再生成で上書きされるため lint しない。
+    "markdownlint.ignore": [
+        "backend/generated/**",
+        "backend/build/**"
+    ]
 }
