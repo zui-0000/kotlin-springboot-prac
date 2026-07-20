@@ -40,17 +40,24 @@ spring:
 
 ## コードの構成
 
-### 1. テーブル定義（`Messages.kt`）
+> 注: 以下は Exposed DSL の最小例。現在のコードは書き込み=`MessageRepository` /
+> 読み取り=`MessageQueryService` に分離し（CQRS・[21](./21-ddd-cqrs-structure.md)）、
+> テーブルは `TMessage`（uuid 主キー・[26](./26-uuidv7-primary-key.md)）。
+
+### 1. テーブル定義（`TMessage.kt`）
 
 ```kotlin
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.javatime.timestampWithTimeZone
 
-object Messages : Table("messages") {
-    val id = long("id").autoIncrement()
+object TMessage : Table("t_message") {
+    // id は DB の DEFAULT uuidv7()（PG18 ネイティブ）で採番 → databaseGenerated()
+    val id = uuid("id").databaseGenerated()
+    val userId = uuid("user_id")   // FK 制約は Flyway 側が持つ（ここは素の列として写す）
     val content = text("content")
-    // DB の DEFAULT now() で入る列。databaseGenerated() で INSERT 時に触らせない
+    // created_at / updated_at は DB の DEFAULT now() で入る。INSERT 時に触らせない
     val createdAt = timestampWithTimeZone("created_at").databaseGenerated()
+    val updatedAt = timestampWithTimeZone("updated_at").databaseGenerated()
     override val primaryKey = PrimaryKey(id)
 }
 ```
@@ -111,6 +118,32 @@ import org.jetbrains.exposed.v1.core.eq   // これが正
 
 > なお JPA 版では POST のレスポンスで `createdAt` が null になったが、
 > Exposed 版は INSERT 後に読み直す実装にしたため、生成された値が返る。
+
+### ⑤ `uuid()` 列は `kotlin.uuid.Uuid`（`java.util.UUID` ではない）
+
+Exposed 1.x の `uuid("...")` 列が扱う型は、`java.util.UUID` ではなく Kotlin ネイティブの
+**`kotlin.uuid.Uuid`（experimental）**。訓練データの古い Exposed 感覚（java.util.UUID）だと
+`Argument type mismatch: actual type is 'Uuid', but 'UUID' was expected` でハマる。
+
+方針は「**正準型は `java.util.UUID`**」（OpenAPI 生成物も java.util.UUID・ドメインに experimental を
+漏らさない）。`kotlin.uuid.Uuid` は **Exposed アダプタ内に封じ込め**、境界で相互変換する。
+
+```kotlin
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.toJavaUuid
+import kotlin.uuid.toKotlinUuid
+
+// 読み取り: kotlin.uuid.Uuid → java.util.UUID
+@OptIn(ExperimentalUuidApi::class)
+private fun ResultRow.toMessage() =
+    Message(id = MessageId(this[TMessage.id].toJavaUuid()), /* ... */)
+
+// 書き込み: java.util.UUID → kotlin.uuid.Uuid
+it[TMessage.userId] = userId.value.toKotlinUuid()
+```
+
+`@OptIn(ExperimentalUuidApi::class)` は変換を行う infra の関数だけに付ければよい（domain には不要）。
+主キー移行の全体像は [26-uuidv7-primary-key.md](./26-uuidv7-primary-key.md)。
 
 ## 参考リンク
 
